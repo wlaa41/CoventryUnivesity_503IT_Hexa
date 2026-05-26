@@ -118,7 +118,6 @@ These are example names for sound files:
 | Level complete sound | sfx_level_complete.mp3 |
 | Home screen music | music_home.mp3 |
 | Quiz music | music_quiz.mp3 |
-| Bike game music | music_bike.mp3 |
 | Winning music | music_win.mp3 |
 
 ---
@@ -127,7 +126,7 @@ These are example names for sound files:
 
 | Game Part | Animation | Sound or Music |
 |---|---|---|
-| Loading screen | Kera and QB logo animation | Intro music |
+| Loading screen | Hexa logo animation | Intro music |
 | Home screen | Button hover animation | Home music |
 | Button click | No animation needed | Button click sound |
 | Correct answer | Sparkle animation | Correct answer sound |

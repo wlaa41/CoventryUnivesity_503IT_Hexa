@@ -93,12 +93,12 @@ These are example names for animation files:
 
 | Animation | File Name |
 |---|---|
-| Loading Hexa animation | anim_loading_kera.json |
+| Loading Hexa animation | anim_loading_hexa.json |
 | Correct answer animation | anim_quiz_correct.json |
 | Wrong answer animation | anim_quiz_wrong.json |
 | Movement animation | anim_bike_drive.riv |
 | Speed boost animation | anim_speed_boost.json |
-| Crash animation | anim_bike_crash.json |
+| Crash animation | anim_crash.json |
 | Level complete animation | anim_level_complete.json |
 | Final win animation | anim_final_win.json |
 

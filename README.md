@@ -49,7 +49,7 @@ Workplace security, financial scams, password management, data protection, and s
 | Sandesh Jung Shah | 15626710 |
 | Abdullah Bakhurdeen | 15580319 |
 | Nabin Sunar | 15618449 |
-| Johns Jimzee | 15502001 |
+| Johns Jimee | 15502001 |
 | Sijan Bhandari | 15597041 | 
 
 ## Project Objectives

@@ -24,7 +24,6 @@ I need to prepare animations for:
 - Home screen buttons
 - Quiz correct answer
 - Quiz wrong answer
-- Bike movement
 - Speed boost
 - Crash effect
 - Level complete screen
@@ -41,8 +40,6 @@ I need to prepare sounds for:
 - Button click
 - Correct answer
 - Wrong answer
-- Bike start
-- Bike engine
 - Speed boost
 - Crash
 - Level complete
@@ -61,7 +58,7 @@ Different parts of the game can have different music:
 | Loading screen | Short intro music |
 | Home screen | Calm game music |
 | Quiz section | Light thinking music |
-| Bike game | Fast action music |
+| Fast action music |
 | Winning screen | Celebration music |
 
 The music should not be too loud because it should not disturb the player.
@@ -76,7 +73,6 @@ I can use **Rive** to create:
 
 - Character animations
 - Button animations
-- Bike animation
 - Game UI animation
 
 ## LottieFiles
@@ -97,11 +93,10 @@ These are example names for animation files:
 
 | Animation | File Name |
 |---|---|
-| Loading Kera animation | anim_loading_kera.json |
-| Loading QB animation | anim_loading_qb.json |
+| Loading Hexa animation | anim_loading_kera.json |
 | Correct answer animation | anim_quiz_correct.json |
 | Wrong answer animation | anim_quiz_wrong.json |
-| Bike movement animation | anim_bike_drive.riv |
+| Movement animation | anim_bike_drive.riv |
 | Speed boost animation | anim_speed_boost.json |
 | Crash animation | anim_bike_crash.json |
 | Level complete animation | anim_level_complete.json |
@@ -118,8 +113,6 @@ These are example names for sound files:
 | Button click sound | sfx_button_click.mp3 |
 | Correct answer sound | sfx_quiz_correct.mp3 |
 | Wrong answer sound | sfx_quiz_wrong.mp3 |
-| Bike start sound | sfx_bike_start.mp3 |
-| Bike engine sound | sfx_bike_engine_loop.mp3 |
 | Speed boost sound | sfx_speed_boost.mp3 |
 | Crash sound | sfx_crash.mp3 |
 | Level complete sound | sfx_level_complete.mp3 |
@@ -139,8 +132,6 @@ These are example names for sound files:
 | Button click | No animation needed | Button click sound |
 | Correct answer | Sparkle animation | Correct answer sound |
 | Wrong answer | Shake animation | Wrong answer sound |
-| Bike game starts | Bike start animation | Bike start sound |
-| Bike driving | Bike moving animation | Engine sound |
 | Speed boost | Speed effect animation | Boost sound |
 | Crash | Crash animation | Crash sound |
 | Level complete | Confetti animation | Level complete sound |
@@ -193,7 +184,7 @@ They help the player:
 - Understand the game better
 - Enjoy the game more
 - Notice correct and wrong answers
-- Feel excited during the bike game
+- Feel excited during the game
 - Feel rewarded after completing levels
 
 Without sound and animation, the game may feel plain and boring.

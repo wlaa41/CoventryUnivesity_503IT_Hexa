@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hexa Cyber Quiz</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- ===== THEME TOGGLE ===== -->
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle dark/light mode">
+        <span class="theme-icon">🌙</span>
+    </button>
+
+    <!-- ===== HOME SCREEN ===== -->
+    <section id="screen-home" class="screen active">
+        <div class="home-inner">
+            <div class="brand">
+                <img src="assets/images/logo.png" alt="Hexa Logo" class="logo" onerror="this.style.display='none'">
+                <div class="brand-text">
+                    <h1 class="game-title">Hexa Cyber Quiz</h1>
+                    <p class="subtitle">Learn cybersecurity through interactive stories</p>
+                </div>
+            </div>
+            <p class="choose-label">Choose your age group to begin</p>
+            <div class="age-cards">
+                <button class="age-card children" data-group="children">
+                    <span class="age-icon">🧒</span>
+                    <span class="age-name">Children</span>
+                    <span class="age-range">Ages 6 – 12</span>
+                    <span class="age-desc">Safe internet basics, privacy &amp; passwords</span>
+                </button>
+                <button class="age-card teens" data-group="teens">
+                    <span class="age-icon">🧑</span>
+                    <span class="age-name">Teens</span>
+                    <span class="age-range">Ages 13 – 17</span>
+                    <span class="age-desc">Social media, phishing &amp; online safety</span>
+                </button>
+                <button class="age-card adults" data-group="adults">
+                    <span class="age-icon">👨‍💼</span>
+                    <span class="age-name">Adults</span>
+                    <span class="age-range">Ages 18+</span>
+                    <span class="age-desc">Workplace security, scams &amp; data protection</span>
+                </button>
+            </div>
+            <p class="footer-note">503IT &bull; HEXA Group &bull; Coventry University</p>
+        </div>
+    </section>
+
+    <!-- ===== QUIZ SCREEN ===== -->
+    <section id="screen-quiz" class="screen">
+        <div class="quiz-container">
+            <div class="quiz-topbar">
+                <button id="btn-back" class="btn-back">&#8592; Back</button>
+                <div class="progress-wrap">
+                    <span id="q-counter" class="q-counter">1 / 10</span>
+                    <div class="progress-track">
+                        <div id="progress-fill" class="progress-fill"></div>
+                    </div>
+                </div>
+                <div class="score-chip">Score: <strong id="live-score">0</strong></div>
+            </div>
+
+            <div class="badges-row">
+                <span id="topic-badge" class="badge">topic</span>
+                <span id="diff-badge" class="badge">easy</span>
+            </div>
+
+            <div class="story-card">
+                <div class="card-label">&#128214; Scenario</div>
+                <p id="story-text"></p>
+            </div>
+
+            <div class="question-card">
+                <p id="question-text"></p>
+            </div>
+
+            <div class="options-grid">
+                <button class="opt-btn" data-opt="A">
+                    <span class="opt-letter">A</span>
+                    <span id="opt-a" class="opt-text"></span>
+                </button>
+                <button class="opt-btn" data-opt="B">
+                    <span class="opt-letter">B</span>
+                    <span id="opt-b" class="opt-text"></span>
+                </button>
+                <button class="opt-btn" data-opt="C">
+                    <span class="opt-letter">C</span>
+                    <span id="opt-c" class="opt-text"></span>
+                </button>
+                <button class="opt-btn" data-opt="D">
+                    <span class="opt-letter">D</span>
+                    <span id="opt-d" class="opt-text"></span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FEEDBACK SCREEN ===== -->
+    <section id="screen-feedback" class="screen">
+        <div class="feedback-container">
+            <div id="fb-icon" class="fb-icon"></div>
+            <h2 id="fb-title" class="fb-title"></h2>
+            <div class="explanation-card">
+                <div class="card-label">&#128161; Why?</div>
+                <p id="fb-explanation"></p>
+            </div>
+            <button id="btn-next" class="btn-primary">Next Question &#8594;</button>
+        </div>
+    </section>
+
+    <!-- ===== END SCREEN ===== -->
+    <section id="screen-end" class="screen">
+        <div class="end-container">
+            <div class="trophy">&#127942;</div>
+            <h1>Quiz Complete!</h1>
+            <div class="final-score-box">
+                <span id="end-score">0 / 10</span>
+            </div>
+            <p id="end-message" class="end-message"></p>
+            <div class="end-stars" id="end-stars"></div>
+            <div class="end-actions">
+                <button id="btn-retry" class="btn-primary">&#9654; Play Again</button>
+                <button id="btn-home" class="btn-outline">&#8617; Change Group</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== LOADING OVERLAY ===== -->
+    <div id="loading" class="loading-overlay">
+        <div class="spinner"></div>
+        <p>Loading questions&hellip;</p>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>

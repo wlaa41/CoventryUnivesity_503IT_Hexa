@@ -11,6 +11,7 @@ import kidsBg from "./assets/images/kids-bg.png";
 import teensBg from "./assets/images/teens-bg.png";
 import adultsBg from "./assets/images/adults-bg.png";
 import hexaGroupLogo from "./assets/images/hexa-group-logo.png";
+import hexaHomeArena from "./assets/images/hexa-home-arena.png";
 
 const levelInfo = {
   kids: {
@@ -351,9 +352,12 @@ function LogoCore({ intro = false }) {
   );
 }
 
-function SceneEffects({ intense = false }) {
+function SceneEffects({ intense = false, logoPalette = false }) {
   return (
-    <div className={`scene-effects ${intense ? "intense" : ""}`} aria-hidden="true">
+    <div
+      className={`scene-effects ${intense ? "intense" : ""} ${logoPalette ? "logo-palette" : ""}`}
+      aria-hidden="true"
+    >
       <span className="grid-floor"></span>
       <span className="scene-orbit scene-orbit-one"></span>
       <span className="scene-orbit scene-orbit-two"></span>
@@ -363,6 +367,41 @@ function SceneEffects({ intense = false }) {
       <span className="scan-beam"></span>
       <span className="light-column column-one"></span>
       <span className="light-column column-two"></span>
+      {logoPalette && (
+        <>
+          <span className="brand-aura aura-blue"></span>
+          <span className="brand-aura aura-orange"></span>
+          <span className="energy-ribbon ribbon-blue"></span>
+          <span className="energy-ribbon ribbon-orange"></span>
+          <span className="brand-particle particle-one"></span>
+          <span className="brand-particle particle-two"></span>
+          <span className="brand-particle particle-three"></span>
+          <span className="brand-particle particle-four"></span>
+          <span className="brand-particle particle-five"></span>
+          <span className="brand-particle particle-six"></span>
+        </>
+      )}
+    </div>
+  );
+}
+
+function HomeArenaEffects() {
+  return (
+    <div className="home-arena-effects" aria-hidden="true">
+      <span className="arena-depth-glow glow-blue"></span>
+      <span className="arena-depth-glow glow-orange"></span>
+      <span className="arena-flame flame-blue flame-blue-one"></span>
+      <span className="arena-flame flame-blue flame-blue-two"></span>
+      <span className="arena-flame flame-orange flame-orange-one"></span>
+      <span className="arena-flame flame-orange flame-orange-two"></span>
+      <span className="arena-energy-arc arc-blue"></span>
+      <span className="arena-energy-arc arc-orange"></span>
+      <span className="arena-ember ember-one"></span>
+      <span className="arena-ember ember-two"></span>
+      <span className="arena-ember ember-three"></span>
+      <span className="arena-ember ember-four"></span>
+      <span className="arena-ember ember-five"></span>
+      <span className="arena-ember ember-six"></span>
     </div>
   );
 }
@@ -467,15 +506,16 @@ function InstructionsModal({ onClose }) {
 
 function IntroScreen({ loading, error }) {
   return (
-    <main className="app intro-screen" style={{ backgroundImage: `url(${homeHubBg})` }}>
-      <div className="screen-overlay"></div>
-      <SceneEffects intense />
+    <main className="app intro-screen arena-screen" style={{ backgroundImage: `url(${hexaHomeArena})` }}>
+      <div className="home-overlay"></div>
+      <HomeArenaEffects />
 
       <section className="intro-content">
-        <div className="intro-brand-frame">
-          <img className="intro-brand-image" src={hexaGroupLogo} alt="HEXA group logo" />
-        </div>
         <p className="eyebrow">INITIALIZING CYBER RANGE</p>
+        <h1>
+          <span>TEAM</span>
+          <strong>HEXA</strong>
+        </h1>
         <p className="intro-status">
           {error || (loading ? "Loading verified scenarios..." : "Secure link established")}
         </p>
@@ -499,14 +539,13 @@ function PortalScreen({
   controls
 }) {
   return (
-    <main className="app portal-screen" style={{ backgroundImage: `url(${homeHubBg})` }}>
-      <div className="screen-overlay"></div>
-      <SceneEffects />
+    <main className="app portal-screen arena-screen" style={{ backgroundImage: `url(${hexaHomeArena})` }}>
+      <div className="home-overlay"></div>
+      <HomeArenaEffects />
       <AudioDock {...controls} compact />
 
       <section className="portal-layout">
         <div className="portal-copy">
-          <LogoCore />
           <p className="eyebrow">SECURE TRAINING TERMINAL</p>
           <h1>Enter the range.</h1>
           <p>
@@ -633,14 +672,18 @@ function HomeScreen({
   onInstructions
 }) {
   return (
-    <main className="app home-screen" style={{ backgroundImage: `url(${homeHubBg})` }}>
+    <main className="app home-screen arena-screen" style={{ backgroundImage: `url(${hexaHomeArena})` }}>
       <div className="home-overlay"></div>
-      <SceneEffects />
+      <HomeArenaEffects />
 
       <section className="home-shell">
         <TopNavigation {...navigation} />
 
         <div className="hero">
+          <div className="home-brand-bounce">
+            <img src={hexaGroupLogo} alt="" />
+            <span>HEXA</span>
+          </div>
           <p className="eyebrow">WELCOME BACK, {(profile?.name || "GUEST").toUpperCase()}</p>
           <h1>
             THINK FAST.

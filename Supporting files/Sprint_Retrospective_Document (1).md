@@ -87,12 +87,12 @@
 
 | # | Member | Rating /10 | Comment |
 |---|---|---|---|
-| 1 | AB | **8/10** | Great work on the question bank! |
+| 1 | AB | **10/10** | Great work on the question bank! |
 | 2 | SB | **9/10** | Excellent Scrum Master — kept team focused |
-| 3 | JJ | **8/10** | Animations added great user experience |
-| 4 | SS | **7/10** | Good testing but task submitted late on Friday |
+| 3 | JJ | **9/10** | Animations added great user experience |
+| 4 | SS | **8/10** | Good testing but task submitted late on Friday |
 | 5 | NS | **8/10** | Score tracking built perfectly — well done! |
-| 6 | AB | **8/10** | Good product ownership and backlog management |
+| 6 | AB | **9/10** | Good product ownership and backlog management |
 
 ---
 

@@ -1,0 +1,2223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>HEXA Ride: 3D Bike Challenge</title>
+  <style>
+    :root{
+      --bg:#070812;
+      --panel:rgba(12,16,35,.78);
+      --panel2:rgba(20,26,58,.86);
+      --text:#f8fbff;
+      --muted:#aab4d6;
+      --cyan:#57e9ff;
+      --pink:#ff4fd8;
+      --green:#48ff9b;
+      --yellow:#ffe66b;
+      --red:#ff5677;
+      --purple:#8d6bff;
+      --glass:rgba(255,255,255,.08);
+      --border:rgba(255,255,255,.18);
+      --shadow:0 25px 80px rgba(0,0,0,.45);
+    }
+
+    *{ box-sizing:border-box; margin:0; padding:0; }
+
+    html,body{
+      width:100%;
+      height:100%;
+      overflow:hidden;
+      background:radial-gradient(circle at 20% 20%, #1a2153 0%, #070812 45%, #03040a 100%);
+      color:var(--text);
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    }
+
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      background:
+        linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+      background-size:40px 40px;
+      mask-image:radial-gradient(circle at center, black, transparent 75%);
+      pointer-events:none;
+      z-index:1;
+    }
+
+    #gameCanvas{
+      position:fixed;
+      inset:0;
+      width:100vw;
+      height:100vh;
+      display:block;
+      background:#050611;
+      z-index:0;
+    }
+
+    .screen{
+      position:fixed;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:5;
+      padding:28px;
+    }
+
+    .screen.active{ display:flex; }
+
+    .panel{
+      width:min(1180px, 96vw);
+      border:1px solid var(--border);
+      background:linear-gradient(145deg, rgba(11,16,38,.84), rgba(19,24,55,.72));
+      border-radius:34px;
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(22px);
+      overflow:hidden;
+      position:relative;
+    }
+
+    .panel::before{
+      content:"";
+      position:absolute;
+      inset:-1px;
+      pointer-events:none;
+      background:
+        radial-gradient(circle at 18% 12%, rgba(87,233,255,.18), transparent 28%),
+        radial-gradient(circle at 85% 0%, rgba(255,79,216,.16), transparent 30%),
+        radial-gradient(circle at 52% 105%, rgba(72,255,155,.12), transparent 35%);
+      z-index:-1;
+    }
+
+    .home-grid{
+      display:grid;
+      grid-template-columns:1.1fr .9fr;
+      gap:24px;
+      padding:34px;
+      align-items:stretch;
+    }
+
+    .hero-card{
+      min-height:560px;
+      border-radius:28px;
+      padding:34px;
+      border:1px solid rgba(255,255,255,.14);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.035)),
+        radial-gradient(circle at 20% 15%, rgba(255,230,107,.2), transparent 24%),
+        radial-gradient(circle at 80% 15%, rgba(87,233,255,.2), transparent 24%);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .hero-card::after{
+      content:"";
+      position:absolute;
+      width:420px;
+      height:420px;
+      border-radius:50%;
+      background:conic-gradient(from 180deg, var(--cyan), var(--pink), var(--yellow), var(--green), var(--cyan));
+      filter:blur(44px);
+      opacity:.22;
+      right:-160px;
+      bottom:-150px;
+      animation:spin 12s linear infinite;
+    }
+
+    @keyframes spin{ to{ transform:rotate(360deg); } }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:9px 13px;
+      border-radius:999px;
+      background:rgba(87,233,255,.12);
+      border:1px solid rgba(87,233,255,.28);
+      color:#dffaff;
+      font-weight:700;
+      letter-spacing:.03em;
+      font-size:13px;
+      text-transform:uppercase;
+    }
+
+    h1{
+      margin-top:20px;
+      font-size:clamp(42px, 6vw, 82px);
+      line-height:.94;
+      letter-spacing:-.06em;
+      text-wrap:balance;
+    }
+
+    .gradient-text{
+      background:linear-gradient(90deg, #fff, var(--cyan), var(--yellow), var(--pink));
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+    }
+
+    .lead{
+      max-width:650px;
+      margin-top:22px;
+      color:var(--muted);
+      font-size:18px;
+      line-height:1.7;
+    }
+
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:14px;
+      margin-top:26px;
+      position:relative;
+      z-index:2;
+    }
+
+    .stat{
+      padding:16px;
+      border-radius:22px;
+      background:rgba(255,255,255,.075);
+      border:1px solid rgba(255,255,255,.13);
+    }
+
+    .stat b{
+      display:block;
+      font-size:26px;
+      color:#fff;
+    }
+
+    .stat span{
+      color:var(--muted);
+      font-size:13px;
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+    }
+
+    .mode-card{
+      padding:28px;
+      border-radius:28px;
+      background:rgba(255,255,255,.055);
+      border:1px solid rgba(255,255,255,.12);
+      min-height:560px;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+
+    .mode-card h2, .quiz-title, .pause-title, .result-title{
+      font-size:32px;
+      letter-spacing:-.04em;
+    }
+
+    .mode-grid{
+      display:grid;
+      gap:14px;
+      margin:10px 0 10px;
+    }
+
+    .mode-btn{
+      text-align:left;
+      width:100%;
+      padding:18px 18px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.06);
+      color:white;
+      border-radius:22px;
+      cursor:pointer;
+      transition:.25s ease;
+      font:inherit;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .mode-btn::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(90deg, rgba(87,233,255,.18), rgba(255,79,216,.16));
+      opacity:0;
+      transition:.25s ease;
+    }
+
+    .mode-btn:hover, .mode-btn.selected{
+      transform:translateY(-2px);
+      border-color:rgba(87,233,255,.5);
+      box-shadow:0 15px 40px rgba(87,233,255,.12);
+    }
+
+    .mode-btn:hover::before, .mode-btn.selected::before{ opacity:1; }
+
+    .mode-btn strong{
+      position:relative;
+      display:block;
+      font-size:18px;
+      margin-bottom:5px;
+    }
+
+    .mode-btn small{
+      position:relative;
+      color:var(--muted);
+      line-height:1.45;
+      display:block;
+    }
+
+    .primary-btn, .ghost-btn, .danger-btn{
+      border:none;
+      color:#08101a;
+      background:linear-gradient(90deg, var(--cyan), var(--green));
+      padding:16px 20px;
+      border-radius:20px;
+      font-weight:900;
+      font-size:16px;
+      cursor:pointer;
+      transition:.22s ease;
+      box-shadow:0 18px 40px rgba(87,233,255,.18);
+      letter-spacing:.01em;
+    }
+
+    .primary-btn:hover, .ghost-btn:hover, .danger-btn:hover{
+      transform:translateY(-2px) scale(1.01);
+      filter:saturate(1.15);
+    }
+
+    .ghost-btn{
+      color:white;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.16);
+      box-shadow:none;
+    }
+
+    .danger-btn{
+      color:white;
+      background:linear-gradient(90deg, var(--red), var(--pink));
+    }
+
+    .btn-row{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top:auto;
+    }
+
+    .tips{
+      color:var(--muted);
+      line-height:1.65;
+      padding:16px;
+      border-radius:20px;
+      background:rgba(0,0,0,.16);
+      border:1px solid rgba(255,255,255,.09);
+      font-size:14px;
+    }
+
+    .loader-bg{
+      background:
+        radial-gradient(circle at 50% 35%, rgba(255,230,107,.18), transparent 25%),
+        radial-gradient(circle at 30% 70%, rgba(87,233,255,.16), transparent 30%),
+        linear-gradient(130deg, #070812, #131842, #050611);
+    }
+
+    .loader-box{
+      width:min(720px, 92vw);
+      text-align:center;
+      padding:42px 34px;
+      border-radius:36px;
+      border:1px solid rgba(255,255,255,.18);
+      background:rgba(10,12,28,.74);
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(24px);
+    }
+
+    .brand-big{
+      font-size:clamp(64px, 11vw, 132px);
+      line-height:1;
+      font-weight:1000;
+      letter-spacing:-.08em;
+      text-shadow:0 0 42px rgba(255,255,255,.25);
+      animation:pulseBrand 1.2s ease-in-out infinite alternate;
+    }
+
+    @keyframes pulseBrand{
+      from{ transform:scale(.98); filter:brightness(.95); }
+      to{ transform:scale(1.025); filter:brightness(1.18); }
+    }
+
+    .loader-sub{
+      margin-top:12px;
+      color:var(--muted);
+      font-weight:700;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+
+    .progress{
+      height:14px;
+      background:rgba(255,255,255,.09);
+      border-radius:999px;
+      margin-top:28px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.12);
+    }
+
+    .progress-fill{
+      height:100%;
+      width:0%;
+      border-radius:999px;
+      background:linear-gradient(90deg, var(--yellow), var(--cyan), var(--pink));
+      box-shadow:0 0 28px rgba(87,233,255,.55);
+      transition:width .08s linear;
+    }
+
+    .hud{
+      position:fixed;
+      inset:18px 18px auto 18px;
+      z-index:4;
+      display:none;
+      grid-template-columns:1fr auto 1fr;
+      align-items:start;
+      gap:16px;
+      pointer-events:none;
+    }
+
+    .hud.active{ display:grid; }
+
+    .hud-card{
+      pointer-events:auto;
+      border:1px solid rgba(255,255,255,.16);
+      background:rgba(10,13,31,.72);
+      backdrop-filter:blur(18px);
+      border-radius:22px;
+      padding:14px 16px;
+      box-shadow:0 15px 40px rgba(0,0,0,.24);
+    }
+
+    .hud-left, .hud-right{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .hud-right{ justify-content:flex-end; }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.075);
+      border:1px solid rgba(255,255,255,.1);
+      color:white;
+      font-weight:850;
+      font-size:14px;
+    }
+
+    .mini-btn{
+      pointer-events:auto;
+      border:none;
+      border-radius:16px;
+      padding:11px 13px;
+      color:white;
+      background:rgba(255,255,255,.1);
+      border:1px solid rgba(255,255,255,.14);
+      cursor:pointer;
+      font-weight:850;
+    }
+
+    .mini-btn:hover{ background:rgba(255,255,255,.16); }
+
+    .timer-ring{
+      width:86px;
+      height:86px;
+      border-radius:50%;
+      display:grid;
+      place-items:center;
+      background:conic-gradient(var(--cyan) var(--deg, 360deg), rgba(255,255,255,.12) 0);
+      box-shadow:0 0 35px rgba(87,233,255,.15);
+      margin:auto;
+      position:relative;
+    }
+
+    .timer-ring::after{
+      content:"";
+      position:absolute;
+      inset:8px;
+      border-radius:50%;
+      background:rgba(7,8,18,.9);
+      border:1px solid rgba(255,255,255,.1);
+    }
+
+    .timer-ring span{
+      position:relative;
+      z-index:2;
+      font-size:24px;
+      font-weight:1000;
+    }
+
+    .quiz-panel{
+      max-width:1080px;
+      padding:30px;
+    }
+
+    .quiz-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:16px;
+      margin-bottom:20px;
+    }
+
+    .quiz-meta{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .question-box{
+      border-radius:26px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.13);
+      padding:26px;
+    }
+
+    .question{
+      font-size:clamp(24px, 3vw, 38px);
+      line-height:1.22;
+      letter-spacing:-.035em;
+      margin-bottom:20px;
+    }
+
+    .answers{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+    }
+
+    .answer-btn{
+      min-height:76px;
+      padding:18px;
+      border-radius:22px;
+      border:1px solid rgba(255,255,255,.14);
+      color:white;
+      background:rgba(255,255,255,.07);
+      text-align:left;
+      font:inherit;
+      font-weight:780;
+      cursor:pointer;
+      transition:.2s ease;
+    }
+
+    .answer-btn:hover{
+      transform:translateY(-2px);
+      border-color:rgba(87,233,255,.45);
+      background:rgba(87,233,255,.12);
+    }
+
+    .answer-btn.correct{
+      background:rgba(72,255,155,.19);
+      border-color:rgba(72,255,155,.55);
+    }
+
+    .answer-btn.wrong{
+      background:rgba(255,86,119,.19);
+      border-color:rgba(255,86,119,.55);
+    }
+
+    .quiz-feedback{
+      min-height:28px;
+      margin-top:16px;
+      color:var(--muted);
+      font-weight:800;
+    }
+
+    .quiz-actions{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      margin-top:22px;
+      flex-wrap:wrap;
+    }
+
+    .overlay-small{
+      position:fixed;
+      inset:0;
+      z-index:8;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      background:rgba(0,0,0,.48);
+      backdrop-filter:blur(8px);
+      padding:26px;
+    }
+
+    .overlay-small.active{ display:flex; }
+
+    .modal{
+      width:min(620px, 92vw);
+      padding:28px;
+      border-radius:30px;
+      background:rgba(12,16,35,.92);
+      border:1px solid rgba(255,255,255,.17);
+      box-shadow:var(--shadow);
+    }
+
+    .modal p{
+      color:var(--muted);
+      line-height:1.65;
+      margin:14px 0 20px;
+    }
+
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:28px;
+      transform:translateX(-50%) translateY(140%);
+      z-index:10;
+      padding:14px 18px;
+      border-radius:18px;
+      background:rgba(10,13,31,.88);
+      border:1px solid rgba(255,255,255,.16);
+      box-shadow:0 16px 45px rgba(0,0,0,.3);
+      color:white;
+      font-weight:850;
+      transition:.35s ease;
+      max-width:min(760px, 92vw);
+      text-align:center;
+    }
+
+    .toast.show{ transform:translateX(-50%) translateY(0); }
+
+    .mobile-controls{
+      display:none;
+      position:fixed;
+      z-index:6;
+      left:18px;
+      right:18px;
+      bottom:18px;
+      pointer-events:none;
+      justify-content:space-between;
+    }
+
+    .touch-pad{
+      display:flex;
+      gap:12px;
+      pointer-events:auto;
+    }
+
+    .touch-btn{
+      width:64px;
+      height:64px;
+      border-radius:22px;
+      border:1px solid rgba(255,255,255,.16);
+      background:rgba(10,13,31,.7);
+      color:white;
+      font-size:22px;
+      font-weight:1000;
+      backdrop-filter:blur(16px);
+      cursor:pointer;
+      touch-action:none;
+      user-select:none;
+      transition:.18s ease;
+    }
+
+    .touch-btn:hover, .touch-btn:active{
+      border-color:rgba(87,233,255,.72);
+      background:rgba(87,233,255,.2);
+      box-shadow:0 0 28px rgba(87,233,255,.24);
+      transform:translateY(-3px) scale(1.04);
+    }
+
+    .ending-list{
+      margin-top:16px;
+      display:grid;
+      gap:10px;
+    }
+
+    .ending-row{
+      padding:13px 15px;
+      border-radius:18px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.1);
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      color:var(--muted);
+    }
+
+    .ending-row strong{ color:white; }
+
+    .stage-feedback{
+      color:var(--muted);
+      line-height:1.55;
+      margin-top:12px;
+    }
+
+    .stage-stars{
+      display:flex;
+      gap:10px;
+      margin:18px 0 4px;
+    }
+
+    .stage-stars span{
+      display:grid;
+      width:48px;
+      height:46px;
+      place-items:center;
+      color:transparent;
+      background:rgba(255,255,255,.12);
+      clip-path:polygon(50% 0, 61% 34%, 98% 35%, 68% 56%, 79% 94%, 50% 72%, 21% 94%, 32% 56%, 2% 35%, 39% 34%);
+    }
+
+    .stage-stars span.earned{
+      background:linear-gradient(145deg, #fff6a5, #ffc146 56%, #f68021);
+      filter:drop-shadow(0 0 12px rgba(255,186,61,.72));
+      animation:pulseBrand .8s ease-in-out infinite alternate;
+    }
+
+    @media (max-width:900px){
+      .home-grid{
+        grid-template-columns:1fr;
+        overflow:auto;
+        max-height:90vh;
+      }
+      .hero-card,.mode-card{ min-height:auto; }
+      .answers{ grid-template-columns:1fr; }
+      .hud{ grid-template-columns:1fr; }
+      .hud-center{ order:-1; }
+      .mobile-controls{ display:flex; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas"></canvas>
+
+  <!-- Hidden fallback only: the HEXA host app owns the opening splash. -->
+  <section id="loadingScreen" class="screen loader-bg">
+    <div class="loader-box">
+      <div id="loaderBrand" class="brand-big gradient-text">HEXA</div>
+      <div id="loaderSub" class="loader-sub">3D ride engine ready</div>
+      <div class="progress"><div id="loaderFill" class="progress-fill"></div></div>
+    </div>
+  </section>
+
+  <!-- Home screen -->
+  <section id="homeScreen" class="screen">
+    <div class="panel home-grid">
+      <div class="hero-card">
+        <span class="badge">HEXA RIDE • 3D Learning Racing Game</span>
+        <h1><span class="gradient-text">Quiz first.</span><br/>Ride next.<br/>Win 10 levels.</h1>
+        <p class="lead">
+          Answer <b>3 quiz questions correctly</b> to unlock a high-speed 3D bike challenge.
+          Each level becomes harder with smarter questions, faster roads, tighter obstacles, and more points.
+        </p>
+
+        <div class="stats">
+          <div class="stat"><b>10</b><span>Levels</span></div>
+          <div class="stat"><b>3</b><span>Modes</span></div>
+          <div class="stat"><b>20s</b><span>Bike Stage</span></div>
+        </div>
+      </div>
+
+      <aside class="mode-card">
+        <h2>Choose Mode 🏁</h2>
+        <p class="tips">
+          <b>Controls:</b> A/D or ←/→ to move lanes, W/↑ to boost, S/↓ to brake, P to pause.
+          Collect neon energy rings and avoid cones/barriers.
+        </p>
+
+        <div class="mode-grid">
+          <button class="mode-btn selected" data-mode="easy">
+            <strong>🟢 EASY</strong>
+            <small>Best for beginners. Slower bike speed, easier quiz, fewer obstacles.</small>
+          </button>
+          <button class="mode-btn" data-mode="medium">
+            <strong>🟡 MEDIUM</strong>
+            <small>Balanced difficulty. More speed, mixed questions, more road traffic.</small>
+          </button>
+          <button class="mode-btn" data-mode="hard">
+            <strong>🔴 HARD</strong>
+            <small>Fast 3D challenge. Hard quiz, more obstacles, tighter movement.</small>
+          </button>
+        </div>
+
+        <div class="btn-row">
+          <button id="startBtn" class="primary-btn">Start Game 🚀</button>
+          <button id="howBtn" class="ghost-btn">How to Play</button>
+          <button id="soundBtnHome" class="ghost-btn">Sound: ON 🔊</button>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- Quiz screen -->
+  <section id="quizScreen" class="screen">
+    <div class="panel quiz-panel">
+      <div class="quiz-top">
+        <div>
+          <span class="badge">🧠 Quiz Gate</span>
+          <h2 class="quiz-title" id="quizTitle">Level 1 Quiz</h2>
+        </div>
+        <div class="quiz-meta">
+          <span class="pill" id="quizModePill">Mode: EASY</span>
+          <span class="pill" id="quizProgressPill">Question 1 / 3</span>
+          <span class="pill" id="quizScorePill">Correct: 0 / 3</span>
+        </div>
+      </div>
+
+      <div class="question-box">
+        <div id="questionText" class="question">Question appears here.</div>
+        <div id="answers" class="answers"></div>
+        <div id="quizFeedback" class="quiz-feedback"></div>
+      </div>
+
+      <div class="quiz-actions">
+        <button id="homeFromQuizBtn" class="ghost-btn">← Home</button>
+        <button id="nextQuestionBtn" class="primary-btn" disabled>Next</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- HUD for bike game -->
+  <div id="hud" class="hud">
+    <div class="hud-card hud-left">
+      <span class="pill" id="hudMode">Mode: EASY</span>
+      <span class="pill" id="hudLevel">Level: 1 / 10</span>
+      <span class="pill" id="hudSpeed">Speed: 0</span>
+    </div>
+    <div class="hud-card hud-center">
+      <div class="timer-ring" id="timerRing"><span id="timeText">20</span></div>
+    </div>
+    <div class="hud-card hud-right">
+      <span class="pill" id="hudScore">Score: 0</span>
+      <span class="pill" id="hudCombo">Combo: x1</span>
+      <button class="mini-btn" id="pauseBtn">Pause</button>
+      <button class="mini-btn" id="soundBtnHud">🔊</button>
+      <button class="mini-btn" id="exitRideBtn">Exit Ride</button>
+    </div>
+  </div>
+
+  <!-- Clickable ride controls for desktop and touch screens -->
+  <div id="mobileControls" class="mobile-controls">
+    <div class="touch-pad">
+      <button class="touch-btn" id="touchLeft" aria-label="Move left" title="Move left">←</button>
+      <button class="touch-btn" id="touchRight" aria-label="Move right" title="Move right">→</button>
+    </div>
+    <div class="touch-pad">
+      <button class="touch-btn" id="touchBrake" aria-label="Brake" title="Brake">−</button>
+      <button class="touch-btn" id="touchBoost" aria-label="Boost" title="Boost">+</button>
+    </div>
+  </div>
+
+  <!-- Pause modal -->
+  <div id="pauseModal" class="overlay-small">
+    <div class="modal">
+      <h2 class="pause-title">Paused ⏸️</h2>
+      <p>Take a breath. Your 3D bike challenge is paused. Continue when ready.</p>
+      <div class="btn-row">
+        <button id="resumeBtn" class="primary-btn">Resume</button>
+        <button id="quitBtn" class="danger-btn">Quit to Home</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- How modal -->
+  <div id="howModal" class="overlay-small">
+    <div class="modal">
+      <h2 class="pause-title">How to Play 🎮</h2>
+      <p>
+        Each level begins with 3 quiz questions. You must answer all 3 correctly to unlock the 3D bike ride.
+        In the bike stage, survive for 20 seconds, collect energy rings, avoid obstacles, and build combo points.
+        After level 10, the game returns to the home screen.
+      </p>
+      <div class="btn-row">
+        <button id="closeHowBtn" class="primary-btn">Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Result modal -->
+  <div id="resultModal" class="overlay-small">
+    <div class="modal">
+      <h2 class="result-title" id="resultTitle">Level Complete</h2>
+      <p id="resultText">Great ride!</p>
+      <div class="stage-stars" id="stageStars" aria-label="Ride star rating"></div>
+      <p class="stage-feedback" id="stageFeedback"></p>
+      <div class="ending-list" id="resultStats"></div>
+      <div class="btn-row" style="margin-top:18px;">
+        <button id="continueBtn" class="primary-btn">Continue</button>
+        <button id="resultHomeBtn" class="ghost-btn">Home</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast">Message</div>
+
+  <!-- Bundled locally so the embedded reward ride works offline. -->
+  <script src="./three.min.js"></script>
+
+  <script>
+    /*
+      HEXA Ride: 3D Quiz Bike Challenge
+      Single-file game: HTML + CSS + JavaScript + Three.js
+      Integrated build: Three.js is bundled locally for offline bike rewards.
+    */
+
+    const $ = (id) => document.getElementById(id);
+
+    const screens = {
+      loading: $("loadingScreen"),
+      home: $("homeScreen"),
+      quiz: $("quizScreen")
+    };
+
+    const ui = {
+      loaderBrand: $("loaderBrand"),
+      loaderSub: $("loaderSub"),
+      loaderFill: $("loaderFill"),
+      startBtn: $("startBtn"),
+      howBtn: $("howBtn"),
+      closeHowBtn: $("closeHowBtn"),
+      howModal: $("howModal"),
+      soundBtnHome: $("soundBtnHome"),
+      soundBtnHud: $("soundBtnHud"),
+      quizTitle: $("quizTitle"),
+      quizModePill: $("quizModePill"),
+      quizProgressPill: $("quizProgressPill"),
+      quizScorePill: $("quizScorePill"),
+      questionText: $("questionText"),
+      answers: $("answers"),
+      quizFeedback: $("quizFeedback"),
+      nextQuestionBtn: $("nextQuestionBtn"),
+      homeFromQuizBtn: $("homeFromQuizBtn"),
+      hud: $("hud"),
+      hudMode: $("hudMode"),
+      hudLevel: $("hudLevel"),
+      hudSpeed: $("hudSpeed"),
+      hudScore: $("hudScore"),
+      hudCombo: $("hudCombo"),
+      timeText: $("timeText"),
+      timerRing: $("timerRing"),
+      pauseBtn: $("pauseBtn"),
+      exitRideBtn: $("exitRideBtn"),
+      pauseModal: $("pauseModal"),
+      resumeBtn: $("resumeBtn"),
+      quitBtn: $("quitBtn"),
+      resultModal: $("resultModal"),
+      resultTitle: $("resultTitle"),
+      resultText: $("resultText"),
+      stageStars: $("stageStars"),
+      stageFeedback: $("stageFeedback"),
+      resultStats: $("resultStats"),
+      continueBtn: $("continueBtn"),
+      resultHomeBtn: $("resultHomeBtn"),
+      toast: $("toast"),
+      mobileControls: $("mobileControls"),
+      touchLeft: $("touchLeft"),
+      touchRight: $("touchRight"),
+      touchBoost: $("touchBoost"),
+      touchBrake: $("touchBrake")
+    };
+
+    const embedParams = new URLSearchParams(window.location.search);
+    const embeddedReward = embedParams.get("embed") === "1";
+    const embeddedMode = ["easy", "medium", "hard"].includes(embedParams.get("mode"))
+      ? embedParams.get("mode")
+      : "easy";
+    const embeddedSeconds = Math.max(10, Math.min(120, Number(embedParams.get("seconds")) || 20));
+    const embeddedLevel = Math.max(1, Math.min(10, Number(embedParams.get("level")) || 1));
+
+    const state = {
+      selectedMode: embeddedReward ? embeddedMode : "easy",
+      currentLevel: embeddedReward ? embeddedLevel : 1,
+      maxLevel: embeddedReward ? 1 : 10,
+      phase: "loading",
+      quizIndex: 0,
+      quizCorrect: 0,
+      selectedAnswer: null,
+      score: 0,
+      totalScore: 0,
+      combo: 1,
+      bikeSeconds: embeddedReward ? embeddedSeconds : 20,
+      bikeTimeLeft: embeddedReward ? embeddedSeconds : 20,
+      paused: false,
+      muted: false,
+      audioReady: false,
+      stageStats: {
+        collected: 0,
+        crashes: 0,
+        score: 0
+      }
+    };
+
+    const modeConfig = {
+      easy: {
+        label: "EASY",
+        speedBase: 28,
+        speedLevel: 2.6,
+        obstacleRate: 1.05,
+        coinRate: .82,
+        steer: 10,
+        roadColor: 0x111a34,
+        fog: 0x0a0b18
+      },
+      medium: {
+        label: "MEDIUM",
+        speedBase: 36,
+        speedLevel: 3.6,
+        obstacleRate: .82,
+        coinRate: .72,
+        steer: 12,
+        roadColor: 0x14132f,
+        fog: 0x090817
+      },
+      hard: {
+        label: "HARD",
+        speedBase: 45,
+        speedLevel: 4.8,
+        obstacleRate: .62,
+        coinRate: .62,
+        steer: 14,
+        roadColor: 0x190d22,
+        fog: 0x08050d
+      }
+    };
+
+    const questionBank = {
+      easy: [
+        ["What does HTML mainly create?", ["Web page structure", "Bike engine", "Music volume", "Database password"], 0],
+        ["Which key can move left in this game?", ["A / Left Arrow", "Enter", "Space only", "Escape"], 0],
+        ["What colour is a ripe banana?", ["Yellow", "Blue", "Black only", "Purple"], 0],
+        ["CSS is mostly used for what?", ["Styling web pages", "Charging laptop", "Deleting files", "Making hardware"], 0],
+        ["In a quiz, choosing the correct option gives you what?", ["Progress", "Less time", "Broken screen", "No points"], 0],
+        ["Which one is a programming language?", ["JavaScript", "BananaScript only", "Paint", "Keyboard"], 0],
+        ["What should a player avoid on the road?", ["Obstacles", "Score", "Correct answers", "Level number"], 0],
+        ["What does UI mean?", ["User Interface", "Ultra Ice", "Unused Internet", "Under Item"], 0],
+        ["What should good UX feel like?", ["Easy and clear", "Confusing", "Hidden", "Slow only"], 0],
+        ["What comes after level 9?", ["Level 10", "Level 1", "Level 0", "No level"], 0]
+      ],
+      medium: [
+        ["Which HTML element is commonly used for JavaScript code?", ["<script>", "<paint>", "<bike>", "<answer>"], 0],
+        ["What does collision detection check?", ["Objects touching or overlapping", "Font size only", "Internet speed only", "Colour names"], 0],
+        ["Which loop is useful for game animation?", ["requestAnimationFrame", "deleteFrame", "printFrame", "stopComputer"], 0],
+        ["What is a game HUD?", ["On-screen game information", "Bike tyre", "A quiz answer", "A banana type"], 0],
+        ["Which CSS property can create rounded corners?", ["border-radius", "font-bike", "corner-speed", "html-round"], 0],
+        ["What does 3D game camera control?", ["Player view", "Quiz score only", "Keyboard battery", "File size only"], 0],
+        ["Which one improves accessibility?", ["Clear labels and readable contrast", "Tiny hidden text", "No keyboard controls", "Random buttons"], 0],
+        ["What happens when difficulty increases?", ["More challenge", "Everything disappears", "No gameplay", "Controls stop"], 0],
+        ["What is the role of JavaScript in this game?", ["Logic and interaction", "Only images", "Only spelling", "Only electricity"], 0],
+        ["Which option best describes a level system?", ["Progressive stages", "One static screen", "No challenge", "Only loading page"], 0]
+      ],
+      hard: [
+        ["In real-time games, delta time is used to make movement...", ["Frame-rate independent", "Only faster on slow PCs", "Invisible", "Impossible to pause"], 0],
+        ["A 3D scene commonly contains objects, lights, renderer, and...", ["Camera", "Printer", "Spreadsheet", "Router"], 0],
+        ["Which method is best for smooth browser game loops?", ["requestAnimationFrame", "setNameFrame", "documentSleep", "CSS only"], 0],
+        ["Why use object pooling in games?", ["Reduce repeated object creation", "Increase lag", "Remove controls", "Delete all objects"], 0],
+        ["What does responsive UI mean?", ["Adapts to different screen sizes", "Only works on one monitor", "Always tiny", "No buttons"], 0],
+        ["What is a bounding box useful for?", ["Fast collision checks", "Playing music only", "Writing essays only", "Changing Wi-Fi"], 0],
+        ["Which design choice helps UX?", ["Immediate feedback after actions", "No feedback", "Hidden errors", "Random navigation"], 0],
+        ["In a racing game, increasing spawn rate usually means...", ["More objects appear", "No road", "Less gameplay", "Screen turns off"], 0],
+        ["A combo multiplier rewards...", ["Continuous skillful play", "Closing the page", "Wrong answers", "Pausing only"], 0],
+        ["What should happen after finishing level 10 in this game?", ["Return to home screen", "Crash the browser", "Delete score", "Freeze forever"], 0]
+      ]
+    };
+
+    // Extra generated questions for all 10 levels, 3 per level.
+    function getLevelQuestions(mode, level){
+      const bank = questionBank[mode];
+      const picked = [];
+      const offset = (level - 1) % bank.length;
+
+      for(let i = 0; i < 3; i++){
+        const base = bank[(offset + i * 3) % bank.length];
+        let q = {
+          question: `Level ${level}: ${base[0]}`,
+          answers: [...base[1]],
+          correct: base[2]
+        };
+
+        // Add a maths/logic question depending on level to make it feel progressive.
+        if(i === 1){
+          const a = level + (mode === "hard" ? 8 : mode === "medium" ? 5 : 2);
+          const b = level * (mode === "hard" ? 3 : mode === "medium" ? 2 : 1);
+          const answer = a + b;
+          q = {
+            question: `Level ${level}: You collected ${a} bananas and then ${b} more. How many total?`,
+            answers: shuffle([answer, answer + 1, Math.max(0, answer - 2), answer + 4]).map(String),
+            correct: 0
+          };
+          const correctText = String(answer);
+          q.correct = q.answers.indexOf(correctText);
+        }
+
+        if(i === 2 && level >= 6){
+          const correct = mode === "hard" ? "Stay focused, avoid obstacles, and keep combo" : "Answer carefully and control the bike";
+          q = {
+            question: `Level ${level}: What is the best strategy now that the game is harder?`,
+            answers: shuffle([correct, "Press random buttons", "Ignore quiz questions", "Crash into barriers"]),
+            correct: 0
+          };
+          q.correct = q.answers.indexOf(correct);
+        }
+
+        picked.push(q);
+      }
+      return picked;
+    }
+
+    function shuffle(arr){
+      const a = [...arr];
+      for(let i = a.length - 1; i > 0; i--){
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function showScreen(name){
+      Object.values(screens).forEach(s => s.classList.remove("active"));
+      if(screens[name]) screens[name].classList.add("active");
+    }
+
+    function toast(message){
+      ui.toast.textContent = message;
+      ui.toast.classList.add("show");
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => ui.toast.classList.remove("show"), 2300);
+    }
+
+    // Audio: generated inside browser, no audio files needed.
+    let audioCtx, masterGain, musicInterval;
+    function initAudio(){
+      if(state.audioReady) return;
+      try{
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        masterGain = audioCtx.createGain();
+        masterGain.gain.value = state.muted ? 0 : .16;
+        masterGain.connect(audioCtx.destination);
+        state.audioReady = true;
+        startMusic();
+      }catch(e){
+        console.warn("Audio unavailable", e);
+      }
+    }
+
+    function tone(freq=440, duration=.12, type="sine", volume=.12){
+      if(!state.audioReady || state.muted) return;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = type;
+      osc.frequency.value = freq;
+      gain.gain.value = volume;
+      osc.connect(gain);
+      gain.connect(masterGain);
+      const now = audioCtx.currentTime;
+      gain.gain.setValueAtTime(volume, now);
+      gain.gain.exponentialRampToValueAtTime(.001, now + duration);
+      osc.start(now);
+      osc.stop(now + duration);
+    }
+
+    function startMusic(){
+      stopMusic();
+      if(!state.audioReady) return;
+      const notes = [220, 277, 330, 392, 330, 277, 247, 294];
+      let i = 0;
+      musicInterval = setInterval(() => {
+        if(state.muted || state.paused) return;
+        const freq = notes[i % notes.length] * (state.phase === "bike" ? 1.25 : 1);
+        tone(freq, .09, "triangle", .035);
+        if(i % 4 === 0) tone(freq / 2, .18, "sine", .025);
+        i++;
+      }, state.phase === "bike" ? 190 : 340);
+    }
+
+    function stopMusic(){
+      if(musicInterval) clearInterval(musicInterval);
+      musicInterval = null;
+    }
+
+    function toggleSound(){
+      initAudio();
+      state.muted = !state.muted;
+      if(masterGain) masterGain.gain.value = state.muted ? 0 : .16;
+      ui.soundBtnHome.textContent = state.muted ? "Sound: OFF 🔇" : "Sound: ON 🔊";
+      ui.soundBtnHud.textContent = state.muted ? "🔇" : "🔊";
+      toast(state.muted ? "Sound muted 🔇" : "Sound enabled 🔊");
+    }
+
+    // The main HEXA app owns the opening splash, so the ride starts without a second brand loader.
+    function runLoader(){
+      state.phase = "home";
+      showScreen("home");
+      toast("Welcome to HEXA Ride");
+      ensureThreeReady();
+    }
+
+    // Three.js 3D bike game
+    const Game3D = {
+      renderer: null,
+      scene: null,
+      camera: null,
+      bike: null,
+      road: null,
+      clock: null,
+      lanes: [-4.2, 0, 4.2],
+      targetLane: 1,
+      laneX: 0,
+      speed: 0,
+      targetSpeed: 0,
+      distance: 0,
+      objects: [],
+      scenery: [],
+      particles: [],
+      keys: {},
+      spawnObstacleTimer: 0,
+      spawnCoinTimer: 0,
+      active: false,
+      lastUpdate: 0,
+
+      init(){
+        if(!window.THREE){
+          alert("The local Three.js bike engine could not load. Please refresh the page.");
+          return;
+        }
+        const canvas = $("gameCanvas");
+        this.renderer = new THREE.WebGLRenderer({ canvas, antialias:true, powerPreference:"high-performance" });
+        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+        this.scene = new THREE.Scene();
+        this.scene.fog = new THREE.Fog(0x090b18, 18, 150);
+
+        this.camera = new THREE.PerspectiveCamera(62, window.innerWidth / window.innerHeight, .1, 500);
+        this.camera.position.set(0, 7.2, 12.5);
+        this.camera.lookAt(0, 2.2, -12);
+
+        this.clock = new THREE.Clock();
+
+        this.buildWorld();
+        this.bindEvents();
+        window.addEventListener("resize", () => this.resize());
+        this.resize();
+        requestAnimationFrame((t) => this.loop(t));
+      },
+
+      buildWorld(){
+        this.scene.clear();
+
+        const hemi = new THREE.HemisphereLight(0x8ee8ff, 0x101020, 1.25);
+        this.scene.add(hemi);
+
+        const sun = new THREE.DirectionalLight(0xffffff, 2.2);
+        sun.position.set(-12, 22, 12);
+        sun.castShadow = true;
+        sun.shadow.mapSize.set(2048,2048);
+        sun.shadow.camera.left = -35;
+        sun.shadow.camera.right = 35;
+        sun.shadow.camera.top = 35;
+        sun.shadow.camera.bottom = -35;
+        this.scene.add(sun);
+
+        const neon1 = new THREE.PointLight(0x57e9ff, 8, 38);
+        neon1.position.set(-10, 6, -10);
+        this.scene.add(neon1);
+
+        const neon2 = new THREE.PointLight(0xff4fd8, 7, 38);
+        neon2.position.set(10, 6, -24);
+        this.scene.add(neon2);
+
+        const config = modeConfig[state.selectedMode];
+
+        // Ground
+        const groundGeo = new THREE.PlaneGeometry(180, 600);
+        const groundMat = new THREE.MeshStandardMaterial({ color:0x070a13, roughness:.88, metalness:.05 });
+        const ground = new THREE.Mesh(groundGeo, groundMat);
+        ground.rotation.x = -Math.PI/2;
+        ground.position.y = -.03;
+        ground.receiveShadow = true;
+        this.scene.add(ground);
+
+        // Road
+        const roadGeo = new THREE.PlaneGeometry(15.5, 680, 1, 1);
+        const roadMat = new THREE.MeshStandardMaterial({
+          color:config.roadColor,
+          roughness:.72,
+          metalness:.12,
+          emissive:0x050615,
+          emissiveIntensity:.15
+        });
+        this.road = new THREE.Mesh(roadGeo, roadMat);
+        this.road.rotation.x = -Math.PI/2;
+        this.road.position.z = -160;
+        this.road.receiveShadow = true;
+        this.scene.add(this.road);
+
+        // Lane lines and neon road edges
+        this.createRoadLines();
+        this.createBike();
+        this.createScenery();
+        this.createSkyline();
+      },
+
+      createRoadLines(){
+        const lineMat = new THREE.MeshStandardMaterial({
+          color:0xffffff,
+          emissive:0x57e9ff,
+          emissiveIntensity:.55,
+          roughness:.2,
+          metalness:.1
+        });
+        const edgeMat = new THREE.MeshStandardMaterial({
+          color:0x57e9ff,
+          emissive:0x57e9ff,
+          emissiveIntensity:1.2
+        });
+
+        for(let z = 10; z > -320; z -= 13){
+          [-2.1, 2.1].forEach(x => {
+            const geo = new THREE.BoxGeometry(.12, .035, 5.2);
+            const line = new THREE.Mesh(geo, lineMat);
+            line.position.set(x, .035, z);
+            line.userData.scroll = true;
+            this.scene.add(line);
+            this.scenery.push(line);
+          });
+        }
+
+        [-7.95, 7.95].forEach(x => {
+          const geo = new THREE.BoxGeometry(.18, .08, 680);
+          const edge = new THREE.Mesh(geo, edgeMat);
+          edge.position.set(x, .05, -160);
+          this.scene.add(edge);
+        });
+      },
+
+      createBike(){
+        const group = new THREE.Group();
+
+        const dark = new THREE.MeshStandardMaterial({ color:0x10131f, roughness:.35, metalness:.55 });
+        const neon = new THREE.MeshStandardMaterial({ color:0x57e9ff, emissive:0x57e9ff, emissiveIntensity:1.2, roughness:.2, metalness:.4 });
+        const yellow = new THREE.MeshStandardMaterial({ color:0xffd84a, emissive:0xffaa00, emissiveIntensity:.28, roughness:.35, metalness:.25 });
+        const tyreMat = new THREE.MeshStandardMaterial({ color:0x050507, roughness:.8, metalness:.1 });
+
+        // Bike body
+        const body = new THREE.Mesh(new THREE.BoxGeometry(1.15, .55, 2.35), yellow);
+        body.position.set(0, 1.2, 0);
+        body.castShadow = true;
+        group.add(body);
+
+        const seat = new THREE.Mesh(new THREE.BoxGeometry(.8, .24, .9), dark);
+        seat.position.set(0, 1.65, .15);
+        seat.castShadow = true;
+        group.add(seat);
+
+        const front = new THREE.Mesh(new THREE.BoxGeometry(.72, .42, .8), neon);
+        front.position.set(0, 1.22, -1.38);
+        front.castShadow = true;
+        group.add(front);
+
+        const handle = new THREE.Mesh(new THREE.BoxGeometry(1.55, .12, .18), dark);
+        handle.position.set(0, 1.85, -1.35);
+        handle.castShadow = true;
+        group.add(handle);
+
+        // Wheels as torus
+        const wheelGeo = new THREE.TorusGeometry(.48, .12, 14, 32);
+        const wheelF = new THREE.Mesh(wheelGeo, tyreMat);
+        wheelF.rotation.y = Math.PI/2;
+        wheelF.position.set(0, .55, -1.05);
+        wheelF.castShadow = true;
+        group.add(wheelF);
+
+        const wheelB = new THREE.Mesh(wheelGeo, tyreMat);
+        wheelB.rotation.y = Math.PI/2;
+        wheelB.position.set(0, .55, 1.05);
+        wheelB.castShadow = true;
+        group.add(wheelB);
+
+        // Rider
+        const riderMat = new THREE.MeshStandardMaterial({ color:0x8d6bff, emissive:0x211044, emissiveIntensity:.35, roughness:.4 });
+        const torso = new THREE.Mesh(new THREE.CapsuleGeometry(.34, .72, 8, 16), riderMat);
+        torso.position.set(0, 2.1, .12);
+        torso.rotation.x = .25;
+        torso.castShadow = true;
+        group.add(torso);
+
+        const helmet = new THREE.Mesh(new THREE.SphereGeometry(.32, 24, 24), neon);
+        helmet.position.set(0, 2.75, -.08);
+        helmet.castShadow = true;
+        group.add(helmet);
+
+        group.position.set(0, 0, 4.8);
+        group.rotation.y = 0;
+        this.bike = group;
+        this.scene.add(group);
+
+        group.userData.wheelF = wheelF;
+        group.userData.wheelB = wheelB;
+      },
+
+      createScenery(){
+        // Detailed roadside neighborhood: raised footpaths, lamps, trees, houses, and walkers.
+        const sidewalkMat = new THREE.MeshStandardMaterial({
+          color:0x667184,
+          roughness:.92,
+          metalness:.04
+        });
+        const curbMat = new THREE.MeshStandardMaterial({
+          color:0xbfefff,
+          emissive:0x286f86,
+          emissiveIntensity:.52,
+          roughness:.42
+        });
+        const trunkMat = new THREE.MeshStandardMaterial({ color:0x3b2415, roughness:.7 });
+        const leafColors = [0x48ff9b, 0x57e9ff, 0xff4fd8, 0xffe66b];
+
+        for(let z = 14; z > -382; z -= 12){
+          [-1, 1].forEach(side => {
+            const footpath = new THREE.Mesh(new THREE.BoxGeometry(3.35,.18,11.72), sidewalkMat);
+            footpath.position.set(side * 9.72,.07,z);
+            footpath.receiveShadow = true;
+            footpath.userData.scroll = true;
+            footpath.userData.wrapDistance = 396;
+            this.scene.add(footpath);
+            this.scenery.push(footpath);
+
+            const curb = new THREE.Mesh(new THREE.BoxGeometry(.24,.28,11.82), curbMat);
+            curb.position.set(side * 8.13,.14,z);
+            curb.castShadow = true;
+            curb.userData.scroll = true;
+            curb.userData.wrapDistance = 396;
+            this.scene.add(curb);
+            this.scenery.push(curb);
+          });
+        }
+
+        for(let i = 0; i < 26; i++){
+          const side = i % 2 === 0 ? -1 : 1;
+          const z = -i * 18 - 12;
+          const x = side * (13.2 + Math.random() * 3.5);
+
+          const trunk = new THREE.Mesh(new THREE.CylinderGeometry(.18,.28,1.8,8), trunkMat);
+          trunk.position.set(x, .9, z);
+          trunk.castShadow = true;
+          trunk.userData.scroll = true;
+          this.scene.add(trunk);
+          this.scenery.push(trunk);
+
+          const leafMat = new THREE.MeshStandardMaterial({
+            color:leafColors[i % leafColors.length],
+            emissive:leafColors[i % leafColors.length],
+            emissiveIntensity:.18,
+            roughness:.45
+          });
+          const top = new THREE.Mesh(new THREE.ConeGeometry(1.05,2.3,9), leafMat);
+          top.position.set(x, 2.7, z);
+          top.castShadow = true;
+          top.userData.scroll = true;
+          this.scene.add(top);
+          this.scenery.push(top);
+        }
+
+        for(let i = 0; i < 16; i++){
+          const side = i % 2 === 0 ? -1 : 1;
+          const z = -28 - i * 24;
+          const x = side * (16.2 + Math.random() * 2.4);
+          const house = this.makeHouse(i);
+          house.position.set(x,0,z);
+          house.rotation.y = side > 0 ? Math.PI / 2 : -Math.PI / 2;
+          house.userData.scrollGroup = true;
+          this.scene.add(house);
+          this.scenery.push(house);
+        }
+
+        for(let i = 0; i < 18; i++){
+          const side = i % 2 === 0 ? -1 : 1;
+          const walker = this.makePedestrian(i);
+          walker.position.set(side * (9.2 + Math.random() * .95),0,-16 - i * 21);
+          walker.userData.walkBaseX = walker.position.x;
+          walker.userData.walkDirection = i % 4 < 2 ? 1 : -1;
+          walker.userData.walkPace = .82 + Math.random() * .5;
+          walker.userData.walkPhase = Math.random() * Math.PI * 2;
+          this.scene.add(walker);
+          this.scenery.push(walker);
+        }
+
+        for(let i = 0; i < 22; i++){
+          const side = i % 2 === 0 ? -1 : 1;
+          const lamp = this.makeStreetLamp(i);
+          lamp.position.set(side * 11.18,0,-10 - i * 18);
+          this.scene.add(lamp);
+          this.scenery.push(lamp);
+        }
+      },
+
+      makeHouse(i){
+        const group = new THREE.Group();
+        const bodyMat = new THREE.MeshStandardMaterial({
+          color:[0x20385f,0x40265f,0x1f4b43,0x563522][i%4],
+          roughness:.55,
+          metalness:.1
+        });
+        const roofMat = new THREE.MeshStandardMaterial({
+          color:[0xff4fd8,0x57e9ff,0xff9d45][i%3],
+          emissive:[0x441136,0x124e66,0x552200][i%3],
+          emissiveIntensity:.35,
+          roughness:.45
+        });
+        const trimMat = new THREE.MeshStandardMaterial({
+          color:0xd9f8ff,
+          emissive:0x3d9bb1,
+          emissiveIntensity:.24,
+          roughness:.32,
+          metalness:.18
+        });
+        const doorMat = new THREE.MeshStandardMaterial({
+          color:0x102039,
+          emissive:0x57e9ff,
+          emissiveIntensity:.48,
+          roughness:.36,
+          metalness:.22
+        });
+        const body = new THREE.Mesh(new THREE.BoxGeometry(4.5,4.25,4), bodyMat);
+        body.position.y = 2.12;
+        body.castShadow = true;
+        body.receiveShadow = true;
+        group.add(body);
+
+        const sideWing = new THREE.Mesh(new THREE.BoxGeometry(1.55,2.6,4.35), bodyMat);
+        sideWing.position.set(2.58,1.3,.18);
+        sideWing.castShadow = true;
+        group.add(sideWing);
+
+        const roof = new THREE.Mesh(new THREE.ConeGeometry(3.45,1.75,4), roofMat);
+        roof.position.y = 5.04;
+        roof.rotation.y = Math.PI/4;
+        roof.castShadow = true;
+        group.add(roof);
+
+        const winMat = new THREE.MeshStandardMaterial({
+          color:[0x57e9ff,0xffe66b,0xff8bdc][i%3],
+          emissive:[0x57e9ff,0xffc95c,0xff4fd8][i%3],
+          emissiveIntensity:.86,
+          roughness:.18,
+          metalness:.12
+        });
+        [[-1.28,1.2],[1.28,1.2],[-1.28,3.05],[0,3.05],[1.28,3.05]].forEach(([x,y])=>{
+          const frame = new THREE.Mesh(new THREE.BoxGeometry(.92,1.02,.1), trimMat);
+          frame.position.set(x,y,-2.035);
+          group.add(frame);
+          const w = new THREE.Mesh(new THREE.BoxGeometry(.72,.82,.14), winMat);
+          w.position.set(x,y,-2.1);
+          group.add(w);
+        });
+
+        const door = new THREE.Mesh(new THREE.BoxGeometry(.86,1.8,.15), doorMat);
+        door.position.set(0,.92,-2.1);
+        group.add(door);
+
+        const step = new THREE.Mesh(new THREE.BoxGeometry(1.55,.2,.72), trimMat);
+        step.position.set(0,.1,-2.34);
+        step.receiveShadow = true;
+        group.add(step);
+
+        const chimney = new THREE.Mesh(new THREE.BoxGeometry(.46,1.35,.52), bodyMat);
+        chimney.position.set(1.42,5.25,.65);
+        chimney.castShadow = true;
+        group.add(chimney);
+
+        const beacon = new THREE.Mesh(new THREE.SphereGeometry(.13,12,12), winMat);
+        beacon.position.set(0,5.95,0);
+        group.add(beacon);
+
+        group.userData.house = true;
+        group.userData.housePhase = i * .72;
+        group.userData.windowMaterials = [winMat];
+        group.userData.beacon = beacon;
+        return group;
+      },
+
+      makeStreetLamp(i){
+        const group = new THREE.Group();
+        const poleMat = new THREE.MeshStandardMaterial({
+          color:0x263446,
+          roughness:.42,
+          metalness:.72
+        });
+        const lightMat = new THREE.MeshStandardMaterial({
+          color:i % 2 === 0 ? 0x57e9ff : 0xffb35c,
+          emissive:i % 2 === 0 ? 0x57e9ff : 0xff8a2d,
+          emissiveIntensity:1.65
+        });
+        const pole = new THREE.Mesh(new THREE.CylinderGeometry(.07,.1,3.45,10), poleMat);
+        pole.position.y = 1.72;
+        pole.castShadow = true;
+        group.add(pole);
+        const arm = new THREE.Mesh(new THREE.BoxGeometry(.62,.08,.08), poleMat);
+        arm.position.set(-.26,3.37,0);
+        group.add(arm);
+        const lamp = new THREE.Mesh(new THREE.SphereGeometry(.16,12,12), lightMat);
+        lamp.position.set(-.56,3.3,0);
+        group.add(lamp);
+        group.userData.scrollGroup = true;
+        return group;
+      },
+
+      makePedestrian(i){
+        const group = new THREE.Group();
+        const skinMat = new THREE.MeshStandardMaterial({ color:[0xf4bf92,0xc7835f,0x7e4c3e][i%3], roughness:.72 });
+        const outfitMat = new THREE.MeshStandardMaterial({
+          color:[0x57e9ff,0xff4fd8,0xffe66b,0x48ff9b][i%4],
+          emissive:[0x123e48,0x49113d,0x4d4315,0x123d28][i%4],
+          emissiveIntensity:.35,
+          roughness:.58
+        });
+        const darkMat = new THREE.MeshStandardMaterial({ color:0x111927, roughness:.75 });
+        const head = new THREE.Mesh(new THREE.SphereGeometry(.22,14,14), skinMat);
+        head.position.y = 1.78;
+        group.add(head);
+        const torso = new THREE.Mesh(new THREE.BoxGeometry(.5,.78,.28), outfitMat);
+        torso.position.y = 1.17;
+        torso.castShadow = true;
+        group.add(torso);
+        const leftArm = new THREE.Mesh(new THREE.BoxGeometry(.13,.68,.14), skinMat);
+        leftArm.position.set(-.35,1.18,0);
+        group.add(leftArm);
+        const rightArm = leftArm.clone();
+        rightArm.position.x = .35;
+        group.add(rightArm);
+        const leftLeg = new THREE.Mesh(new THREE.BoxGeometry(.16,.75,.18), darkMat);
+        leftLeg.position.set(-.15,.46,0);
+        group.add(leftLeg);
+        const rightLeg = leftLeg.clone();
+        rightLeg.position.x = .15;
+        group.add(rightLeg);
+        group.scale.setScalar(.94 + (i % 3) * .04);
+        group.userData.walker = true;
+        group.userData.leftArm = leftArm;
+        group.userData.rightArm = rightArm;
+        group.userData.leftLeg = leftLeg;
+        group.userData.rightLeg = rightLeg;
+        return group;
+      },
+
+      createSkyline(){
+        const mat = new THREE.MeshStandardMaterial({
+          color:0x151a38,
+          roughness:.75,
+          metalness:.1,
+          emissive:0x05061b,
+          emissiveIntensity:.25
+        });
+        for(let i = 0; i < 34; i++){
+          const side = i % 2 === 0 ? -1 : 1;
+          const h = 5 + Math.random() * 16;
+          const geo = new THREE.BoxGeometry(3 + Math.random()*3, h, 3 + Math.random()*2);
+          const b = new THREE.Mesh(geo, mat);
+          b.position.set(side * (36 + Math.random()*28), h/2, -20 - i*10);
+          b.userData.scroll = true;
+          b.castShadow = true;
+          b.receiveShadow = true;
+          this.scene.add(b);
+          this.scenery.push(b);
+        }
+      },
+
+      bindEvents(){
+        window.addEventListener("keydown", (e)=>{
+          this.keys[e.key.toLowerCase()] = true;
+          if(e.key.toLowerCase() === "p" && state.phase === "bike") togglePause();
+        });
+        window.addEventListener("keyup", (e)=> this.keys[e.key.toLowerCase()] = false);
+
+        const hold = (el, key) => {
+          const on = (e) => { e.preventDefault(); this.keys[key] = true; };
+          const off = (e) => { e.preventDefault(); this.keys[key] = false; };
+          el.addEventListener("pointerdown", on);
+          el.addEventListener("pointerup", off);
+          el.addEventListener("pointercancel", off);
+          el.addEventListener("pointerleave", off);
+        };
+        hold(ui.touchLeft, "arrowleft");
+        hold(ui.touchRight, "arrowright");
+        hold(ui.touchBoost, "w");
+        hold(ui.touchBrake, "s");
+      },
+
+      resize(){
+        if(!this.renderer || !this.camera) return;
+        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.camera.aspect = window.innerWidth / window.innerHeight;
+        this.camera.updateProjectionMatrix();
+      },
+
+      resetForStage(){
+        this.active = true;
+        this.targetLane = 1;
+        this.laneX = 0;
+        this.speed = 0;
+        this.distance = 0;
+        this.spawnObstacleTimer = 0;
+        this.spawnCoinTimer = 0;
+        this.objects.forEach(o => this.scene.remove(o.mesh));
+        this.objects = [];
+        this.particles.forEach(p => this.scene.remove(p));
+        this.particles = [];
+        if(this.bike){
+          this.bike.position.set(0,0,4.8);
+          this.bike.rotation.set(0,0,0);
+        }
+        const config = modeConfig[state.selectedMode];
+        this.scene.fog.color.setHex(config.fog);
+        if(this.road) this.road.material.color.setHex(config.roadColor);
+      },
+
+      loop(now){
+        requestAnimationFrame((t) => this.loop(t));
+        const dt = Math.min(.05, (now - (this.lastUpdate || now)) / 1000);
+        this.lastUpdate = now;
+
+        if(this.renderer && this.scene && this.camera){
+          if(state.phase === "bike" && !state.paused){
+            this.update(dt);
+          } else {
+            this.idleUpdate(dt);
+          }
+          this.renderer.render(this.scene, this.camera);
+        }
+      },
+
+      idleUpdate(dt){
+        if(!this.bike) return;
+        this.bike.rotation.y = Math.sin(performance.now() * .001) * .05;
+        this.bike.position.y = Math.sin(performance.now() * .002) * .035;
+      },
+
+      update(dt){
+        const config = modeConfig[state.selectedMode];
+        const level = state.currentLevel;
+        this.targetSpeed = config.speedBase + (level - 1) * config.speedLevel;
+
+        if(this.keys["w"] || this.keys["arrowup"]) this.targetSpeed += 12 + level;
+        if(this.keys["s"] || this.keys["arrowdown"]) this.targetSpeed -= 16;
+
+        this.targetSpeed = Math.max(16, this.targetSpeed);
+        this.speed += (this.targetSpeed - this.speed) * Math.min(1, dt * 2.8);
+
+        // lane movement
+        if((this.keys["a"] || this.keys["arrowleft"]) && !this.leftLatch){
+          this.targetLane = Math.max(0, this.targetLane - 1);
+          this.leftLatch = true;
+          tone(320, .06, "square", .05);
+        }
+        if(!(this.keys["a"] || this.keys["arrowleft"])) this.leftLatch = false;
+
+        if((this.keys["d"] || this.keys["arrowright"]) && !this.rightLatch){
+          this.targetLane = Math.min(2, this.targetLane + 1);
+          this.rightLatch = true;
+          tone(420, .06, "square", .05);
+        }
+        if(!(this.keys["d"] || this.keys["arrowright"])) this.rightLatch = false;
+
+        const targetX = this.lanes[this.targetLane];
+        this.laneX += (targetX - this.laneX) * Math.min(1, dt * config.steer);
+        this.bike.position.x = this.laneX;
+        this.bike.rotation.z = THREE.MathUtils.clamp((targetX - this.laneX) * -.08, -.28, .28);
+        this.bike.rotation.y = THREE.MathUtils.clamp((targetX - this.laneX) * -.035, -.16, .16);
+
+        const wheelRot = this.speed * dt * 1.35;
+        this.bike.userData.wheelF.rotation.x -= wheelRot;
+        this.bike.userData.wheelB.rotation.x -= wheelRot;
+
+        // camera follow
+        this.camera.position.x += (this.bike.position.x * .42 - this.camera.position.x) * dt * 2.2;
+        this.camera.position.y += (7.2 - this.camera.position.y) * dt * 2.2;
+        this.camera.position.z += (12.4 - this.camera.position.z) * dt * 2.2;
+        this.camera.lookAt(this.bike.position.x * .2, 1.9, -12);
+
+        // Move scenery and road markers
+        const dz = this.speed * dt;
+        const worldTime = performance.now() * .001;
+        this.distance += dz;
+        for(const item of this.scenery){
+          item.position.z += dz;
+
+          if(item.userData.walker){
+            const swing = Math.sin(worldTime * item.userData.walkPace * 6 + item.userData.walkPhase) * .62;
+            item.position.z += item.userData.walkDirection * item.userData.walkPace * dt;
+            item.position.x = item.userData.walkBaseX + Math.sin(worldTime * item.userData.walkPace + item.userData.walkPhase) * .34;
+            item.userData.leftArm.rotation.x = -swing * .72;
+            item.userData.rightArm.rotation.x = swing * .72;
+            item.userData.leftLeg.rotation.x = swing;
+            item.userData.rightLeg.rotation.x = -swing;
+          }
+
+          if(item.userData.house){
+            const glow = .72 + (Math.sin(worldTime * 2 + item.userData.housePhase) + 1) * .28;
+            item.userData.windowMaterials.forEach(material => material.emissiveIntensity = glow);
+            item.userData.beacon.position.y = 5.95 + Math.sin(worldTime * 2.6 + item.userData.housePhase) * .08;
+          }
+
+          if(item.position.z > 24){
+            item.position.z -= item.userData.wrapDistance || 360 + Math.random() * 80;
+          }
+        }
+
+        // Spawn objects
+        this.spawnObstacleTimer -= dt;
+        this.spawnCoinTimer -= dt;
+        const obstacleDelay = Math.max(.24, config.obstacleRate - level * .035);
+        const coinDelay = Math.max(.2, config.coinRate - level * .018);
+
+        if(this.spawnObstacleTimer <= 0){
+          this.spawnObstacle();
+          this.spawnObstacleTimer = obstacleDelay + Math.random() * .35;
+        }
+
+        if(this.spawnCoinTimer <= 0){
+          this.spawnCoin();
+          this.spawnCoinTimer = coinDelay + Math.random() * .28;
+        }
+
+        // Move objects and collision
+        const bikeBox = new THREE.Box3().setFromObject(this.bike);
+        for(let i = this.objects.length - 1; i >= 0; i--){
+          const obj = this.objects[i];
+          obj.mesh.position.z += dz;
+          obj.mesh.rotation.y += dt * obj.rotSpeed;
+          if(obj.type === "coin"){
+            obj.mesh.position.y = obj.baseY + Math.sin(performance.now() * .006 + obj.phase) * .2;
+          }
+          if(obj.mesh.position.z > 9){
+            this.scene.remove(obj.mesh);
+            this.objects.splice(i,1);
+            continue;
+          }
+          const box = new THREE.Box3().setFromObject(obj.mesh);
+          if(box.intersectsBox(bikeBox)){
+            if(obj.type === "coin"){
+              const points = 50 * state.combo + state.currentLevel * 10;
+              state.score += points;
+              state.stageStats.score += points;
+              state.stageStats.collected++;
+              state.combo = Math.min(9, state.combo + 1);
+              this.spark(obj.mesh.position, 0x48ff9b);
+              tone(660 + state.combo * 40, .08, "triangle", .09);
+              toast(`+${points} energy points`);
+            }else{
+              const loss = Math.min(state.score, 80 + level * 15);
+              state.score -= loss;
+              state.combo = 1;
+              state.stageStats.crashes++;
+              this.speed *= .55;
+              this.spark(obj.mesh.position, 0xff5677);
+              tone(110, .18, "sawtooth", .13);
+              toast(`Obstacle hit! -${loss} points ⚠️`);
+            }
+            this.scene.remove(obj.mesh);
+            this.objects.splice(i,1);
+          }
+        }
+
+        // particles
+        for(let i=this.particles.length-1; i>=0; i--){
+          const p = this.particles[i];
+          p.userData.life -= dt;
+          p.position.addScaledVector(p.userData.vel, dt);
+          p.scale.multiplyScalar(1 + dt * 1.8);
+          p.material.opacity = Math.max(0, p.userData.life);
+          if(p.userData.life <= 0){
+            this.scene.remove(p);
+            this.particles.splice(i,1);
+          }
+        }
+
+        // time update
+        state.bikeTimeLeft -= dt;
+        if(state.bikeTimeLeft <= 0){
+          state.bikeTimeLeft = 0;
+          endBikeStage();
+        }
+
+        updateHUD();
+      },
+
+      spawnObstacle(){
+        const lane = Math.floor(Math.random() * 3);
+        const level = state.currentLevel;
+        const z = -95 - Math.random() * 50;
+        const x = this.lanes[lane];
+
+        const group = new THREE.Group();
+        const isBarrier = Math.random() < .38 + level * .025;
+
+        if(isBarrier){
+          const mat = new THREE.MeshStandardMaterial({
+            color:0xff5677,
+            emissive:0x661122,
+            emissiveIntensity:.55,
+            roughness:.45,
+            metalness:.2
+          });
+          const block = new THREE.Mesh(new THREE.BoxGeometry(2.55,1.15,.75), mat);
+          block.position.y = .62;
+          block.castShadow = true;
+          group.add(block);
+
+          const stripeMat = new THREE.MeshStandardMaterial({
+            color:0xffffff,
+            emissive:0xffffff,
+            emissiveIntensity:.2
+          });
+          for(let i=-1;i<=1;i++){
+            const stripe = new THREE.Mesh(new THREE.BoxGeometry(.22,1.22,.79), stripeMat);
+            stripe.position.set(i*.75,.63,.01);
+            stripe.rotation.z = .5;
+            group.add(stripe);
+          }
+        }else{
+          const coneMat = new THREE.MeshStandardMaterial({
+            color:0xff9a3c,
+            emissive:0x5c2100,
+            emissiveIntensity:.4,
+            roughness:.55
+          });
+          const cone = new THREE.Mesh(new THREE.ConeGeometry(.62,1.45,18), coneMat);
+          cone.position.y = .72;
+          cone.castShadow = true;
+          group.add(cone);
+          const base = new THREE.Mesh(new THREE.CylinderGeometry(.65,.75,.2,18), coneMat);
+          base.position.y = .1;
+          base.castShadow = true;
+          group.add(base);
+        }
+
+        group.position.set(x,0,z);
+        this.scene.add(group);
+        this.objects.push({ type:"obstacle", mesh:group, rotSpeed:(Math.random()-.5)*.5 });
+      },
+
+      spawnCoin(){
+        const lane = Math.floor(Math.random() * 3);
+        const z = -80 - Math.random() * 48;
+        const x = this.lanes[lane];
+
+        const mat = new THREE.MeshStandardMaterial({
+          color:0xffe66b,
+          emissive:0xffc400,
+          emissiveIntensity:.85,
+          roughness:.18,
+          metalness:.5
+        });
+        const coin = new THREE.Mesh(new THREE.TorusGeometry(.58,.18,18,32), mat);
+        coin.position.set(x,1.35,z);
+        coin.rotation.x = Math.PI/2;
+        coin.castShadow = true;
+
+        // Neon energy marker in the middle of the collectible ring.
+        const stemMat = new THREE.MeshStandardMaterial({
+          color:0x48ff9b,
+          emissive:0x104426,
+          emissiveIntensity:.3
+        });
+        const stem = new THREE.Mesh(new THREE.BoxGeometry(.14,.52,.14), stemMat);
+        stem.position.set(0,.05,0);
+        coin.add(stem);
+
+        this.scene.add(coin);
+        this.objects.push({ type:"coin", mesh:coin, rotSpeed:3.4 + Math.random()*2, baseY:1.35, phase:Math.random()*10 });
+      },
+
+      spark(position, color){
+        const mat = new THREE.MeshStandardMaterial({
+          color,
+          emissive:color,
+          emissiveIntensity:1,
+          transparent:true,
+          opacity:.9
+        });
+        for(let i=0;i<16;i++){
+          const p = new THREE.Mesh(new THREE.SphereGeometry(.08 + Math.random()*.08, 10, 10), mat.clone());
+          p.position.copy(position);
+          p.userData.life = .55 + Math.random()*.25;
+          p.userData.vel = new THREE.Vector3(
+            (Math.random()-.5)*7,
+            Math.random()*4,
+            (Math.random()-.5)*7
+          );
+          this.scene.add(p);
+          this.particles.push(p);
+        }
+      }
+    };
+
+    function ensureThreeReady(){
+      if(!Game3D.renderer && window.THREE){
+        Game3D.init();
+      }
+    }
+
+    function updateHUD(){
+      const mode = modeConfig[state.selectedMode].label;
+      ui.hudMode.textContent = `Mode: ${mode}`;
+      ui.hudLevel.textContent = embeddedReward
+        ? "Hexa reward ride"
+        : `Level: ${state.currentLevel} / ${state.maxLevel}`;
+      ui.hudSpeed.textContent = `Speed: ${Math.round(Game3D.speed)}`;
+      ui.hudScore.textContent = `Score: ${state.score}`;
+      ui.hudCombo.textContent = `Combo: x${state.combo}`;
+      const t = Math.ceil(state.bikeTimeLeft);
+      ui.timeText.textContent = t;
+      const deg = (state.bikeTimeLeft / state.bikeSeconds) * 360;
+      ui.timerRing.style.setProperty("--deg", `${deg}deg`);
+    }
+
+    function startGame(){
+      initAudio();
+      state.currentLevel = 1;
+      state.score = 0;
+      state.totalScore = 0;
+      state.combo = 1;
+      startQuizLevel();
+    }
+
+    function startQuizLevel(){
+      state.phase = "quiz";
+      state.quizIndex = 0;
+      state.quizCorrect = 0;
+      state.selectedAnswer = null;
+      state.levelQuestions = getLevelQuestions(state.selectedMode, state.currentLevel);
+      ui.hud.classList.remove("active");
+      ui.mobileControls.style.display = "none";
+      showScreen("quiz");
+      renderQuestion();
+      stopMusic();
+      startMusic();
+    }
+
+    function renderQuestion(){
+      const q = state.levelQuestions[state.quizIndex];
+      ui.quizTitle.textContent = `Level ${state.currentLevel} Quiz`;
+      ui.quizModePill.textContent = `Mode: ${modeConfig[state.selectedMode].label}`;
+      ui.quizProgressPill.textContent = `Question ${state.quizIndex + 1} / 3`;
+      ui.quizScorePill.textContent = `Correct: ${state.quizCorrect} / 3`;
+      ui.questionText.textContent = q.question;
+      ui.answers.innerHTML = "";
+      ui.quizFeedback.textContent = "Choose the correct answer to unlock the bike stage.";
+      ui.nextQuestionBtn.disabled = true;
+      ui.nextQuestionBtn.textContent = state.quizIndex === 2 ? "Unlock Bike Stage 🏍️" : "Next";
+
+      q.answers.forEach((answer, index) => {
+        const btn = document.createElement("button");
+        btn.className = "answer-btn";
+        btn.textContent = answer;
+        btn.addEventListener("click", () => chooseAnswer(index, btn));
+        ui.answers.appendChild(btn);
+      });
+    }
+
+    function chooseAnswer(index, btn){
+      if(state.selectedAnswer !== null) return;
+      initAudio();
+      state.selectedAnswer = index;
+      const q = state.levelQuestions[state.quizIndex];
+      const buttons = [...ui.answers.querySelectorAll(".answer-btn")];
+
+      buttons.forEach((b, i) => {
+        b.disabled = true;
+        if(i === q.correct) b.classList.add("correct");
+      });
+
+      if(index === q.correct){
+        state.quizCorrect++;
+        btn.classList.add("correct");
+        ui.quizFeedback.textContent = "Correct! Nice thinking ✅";
+        tone(740, .14, "triangle", .12);
+      }else{
+        btn.classList.add("wrong");
+        ui.quizFeedback.textContent = `Wrong answer. Correct answer: ${q.answers[q.correct]} ❌`;
+        tone(130, .2, "sawtooth", .12);
+      }
+
+      ui.quizScorePill.textContent = `Correct: ${state.quizCorrect} / 3`;
+      ui.nextQuestionBtn.disabled = false;
+    }
+
+    function nextQuestion(){
+      if(state.selectedAnswer === null) return;
+
+      if(state.quizIndex < 2){
+        state.quizIndex++;
+        state.selectedAnswer = null;
+        renderQuestion();
+      } else {
+        if(state.quizCorrect === 3){
+          toast("Quiz complete! Bike stage unlocked 🏍️");
+          startBikeStage();
+        } else {
+          ui.quizFeedback.textContent = "You need all 3 correct. Try this level again.";
+          toast("You need 3 / 3 correct to unlock the bike stage 🧠");
+          setTimeout(() => startQuizLevel(), 1200);
+        }
+      }
+    }
+
+    function startBikeStage(){
+      ensureThreeReady();
+      if(!Game3D.renderer){
+        toast("The local 3D bike engine is not ready. Please refresh.");
+        return;
+      }
+      state.phase = "bike";
+      state.bikeTimeLeft = state.bikeSeconds;
+      state.combo = 1;
+      state.stageStats = { collected:0, crashes:0, score:0 };
+      showScreen("none");
+      Object.values(screens).forEach(s => s.classList.remove("active"));
+      ui.hud.classList.add("active");
+      ui.mobileControls.style.display = "flex";
+      state.paused = false;
+      ui.pauseModal.classList.remove("active");
+      Game3D.resetForStage();
+      stopMusic();
+      startMusic();
+      updateHUD();
+      toast(`Bike stage started: survive ${state.bikeSeconds} seconds!`);
+    }
+
+    function completeEmbeddedReward(reason){
+      window.parent.postMessage({
+        type: "hexa-bike-complete",
+        reason,
+        points: state.stageStats.score,
+        collected: state.stageStats.collected,
+        crashes: state.stageStats.crashes
+      }, window.location.origin);
+    }
+
+    function endBikeStage(){
+      if(state.phase !== "bike") return;
+      state.phase = "result";
+      Game3D.active = false;
+      ui.hud.classList.remove("active");
+      ui.mobileControls.style.display = "none";
+      state.totalScore += state.stageStats.score;
+
+      if(embeddedReward){
+        completeEmbeddedReward("complete");
+        return;
+      }
+
+      const completedFinal = state.currentLevel >= state.maxLevel;
+      const stageStars = state.stageStats.crashes === 0 && state.stageStats.collected >= 8
+        ? 3
+        : state.stageStats.crashes <= 2 && state.stageStats.collected >= 4
+          ? 2
+          : 1;
+      ui.resultTitle.textContent = completedFinal ? "🏆 Game Complete!" : `✅ Level ${state.currentLevel} Complete`;
+      ui.resultText.textContent = completedFinal
+        ? "Amazing work! You completed all 10 quiz + bike levels. Returning to the home screen after this result."
+        : "Great ride! Your next level will be harder in both quiz and bike gameplay.";
+      ui.stageStars.innerHTML = [1, 2, 3]
+        .map(star => `<span class="${star <= stageStars ? "earned" : ""}">STAR</span>`)
+        .join("");
+      ui.stageFeedback.textContent = stageStars === 3
+        ? "Flawless ride. Sharp movement, clean decisions, maximum style."
+        : stageStars === 2
+          ? "Strong ride. Keep your combo alive and dodge a few more obstacles for three stars."
+          : "Ride complete. Use the lane controls early and collect more energy rings on the next run.";
+
+      ui.resultStats.innerHTML = `
+        <div class="ending-row"><span>Energy rings collected</span><strong>${state.stageStats.collected}</strong></div>
+        <div class="ending-row"><span>Obstacle crashes</span><strong>${state.stageStats.crashes}</strong></div>
+        <div class="ending-row"><span>Stage points</span><strong>${state.stageStats.score}</strong></div>
+        <div class="ending-row"><span>Total score</span><strong>${state.score}</strong></div>
+      `;
+
+      ui.continueBtn.textContent = completedFinal ? "Return Home 🏠" : "Next Level →";
+      ui.resultModal.classList.add("active");
+      tone(completedFinal ? 880 : 620, .18, "triangle", .1);
+      setTimeout(()=> tone(completedFinal ? 1175 : 820, .18, "triangle", .1), 160);
+    }
+
+    function continueAfterResult(){
+      ui.resultModal.classList.remove("active");
+
+      if(state.currentLevel >= state.maxLevel){
+        resetToHome();
+      } else {
+        state.currentLevel++;
+        startQuizLevel();
+      }
+    }
+
+    function resetToHome(){
+      if(embeddedReward){
+        completeEmbeddedReward("quit");
+        return;
+      }
+
+      state.phase = "home";
+      state.currentLevel = 1;
+      state.quizIndex = 0;
+      state.quizCorrect = 0;
+      state.combo = 1;
+      state.paused = false;
+      ui.hud.classList.remove("active");
+      ui.mobileControls.style.display = "none";
+      ui.pauseModal.classList.remove("active");
+      ui.resultModal.classList.remove("active");
+      showScreen("home");
+      stopMusic();
+      startMusic();
+      toast("Back to home screen 🏠");
+    }
+
+    function togglePause(){
+      if(state.phase !== "bike") return;
+      state.paused = !state.paused;
+      ui.pauseModal.classList.toggle("active", state.paused);
+      toast(state.paused ? "Paused" : "Resumed");
+    }
+
+    // UI events
+    document.querySelectorAll(".mode-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        initAudio();
+        document.querySelectorAll(".mode-btn").forEach(b => b.classList.remove("selected"));
+        btn.classList.add("selected");
+        state.selectedMode = btn.dataset.mode;
+        tone(520, .08, "triangle", .07);
+      });
+    });
+
+    ui.startBtn.addEventListener("click", startGame);
+    ui.nextQuestionBtn.addEventListener("click", nextQuestion);
+    ui.homeFromQuizBtn.addEventListener("click", resetToHome);
+    ui.pauseBtn.addEventListener("click", togglePause);
+    ui.exitRideBtn.addEventListener("click", resetToHome);
+    ui.resumeBtn.addEventListener("click", togglePause);
+    ui.quitBtn.addEventListener("click", resetToHome);
+    ui.continueBtn.addEventListener("click", continueAfterResult);
+    ui.resultHomeBtn.addEventListener("click", resetToHome);
+    ui.howBtn.addEventListener("click", () => ui.howModal.classList.add("active"));
+    ui.closeHowBtn.addEventListener("click", () => ui.howModal.classList.remove("active"));
+    ui.soundBtnHome.addEventListener("click", toggleSound);
+    ui.soundBtnHud.addEventListener("click", toggleSound);
+
+    // Start loading
+    if(embeddedReward){
+      document.body.classList.add("embedded-reward");
+      setTimeout(() => startBikeStage(), 120);
+    }else{
+      runLoader();
+    }
+  </script>
+</body>
+</html>

@@ -3,9 +3,9 @@
   "configurations": [
     {
       "name": "hexa-quiz",
-      "runtimeExecutable": "python",
-      "runtimeArgs": ["hexa-quiz/server.py"],
-      "port": 8080
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "hexa-quiz"],
+      "port": 5173
     }
   ]
 }

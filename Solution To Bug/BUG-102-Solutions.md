@@ -1,22 +1,20 @@
-Root Cause
+# Solution for [BUG-102] Background rendering issue
+
+## Root Cause
 Incorrect z-index, missing background CSS, or theme switching not updating the background container.
 
-Fix
-Set a dedicated background layer with a fixed z-index.
+## Fix
+- Set a dedicated background layer with a fixed z-index.
+- Ensure theme switch updates the background image for all screens.
+- Add responsive CSS for different screen sizes.
 
-Ensure theme switch updates the background image for all screens.
-
-Add responsive CSS for different screen sizes.
-
-Code Suggestion
-css
+## Code Suggestion
+```css
 .background {
   position: absolute;
   z-index: -1;
   background-size: cover;
 }
-Status
-Fix applied; needs cross-device testing.
 
 
 

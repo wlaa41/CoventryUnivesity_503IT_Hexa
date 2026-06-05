@@ -52,6 +52,187 @@ const defaultStats = {
   reviews: []
 };
 
+const EMAILJS_SERVICE_ID = "service_2ybwyj8";
+const EMAILJS_TEMPLATE_ID = "template_6o8hpkx";
+const EMAILJS_FEEDBACK_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_FEEDBACK_TEMPLATE_ID || "template_vyuckxk";
+const FEEDBACK_TO_EMAIL = import.meta.env.VITE_FEEDBACK_TO_EMAIL || "baaditya597@gmail.com";
+const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || "4UY1fpnsNOopkvEzu";
+const EMAILJS_SEND_ENDPOINT = "https://api.emailjs.com/api/v1.0/email/send";
+const OTP_EXPIRY_MS = 5 * 60 * 1000;
+const gentleLowVoiceHints = [
+  "natural",
+  "online",
+  "neural",
+  "premium",
+  "aria",
+  "jenny",
+  "ava",
+  "emma",
+  "olivia",
+  "samantha",
+  "serena",
+  "sonia",
+  "susan",
+  "libby",
+  "maisie",
+  "moira",
+  "tessa",
+  "karen",
+  "google uk english female",
+  "google us english female",
+  "female",
+  "woman",
+  "girl"
+];
+const harshVoiceHints = [
+  "david",
+  "mark",
+  "george",
+  "daniel",
+  "fred",
+  "alex",
+  "male",
+  "boy"
+];
+const sweetLowSpeechProfile = {
+  rate: 0.78,
+  pitch: 0.82,
+  volume: 0.9
+};
+const questionSpeechProfiles = {
+  kids: { rate: 0.76, pitch: 0.86, volume: 0.9 },
+  teens: { rate: 0.78, pitch: 0.82, volume: 0.9 },
+  adults: { rate: 0.8, pitch: 0.78, volume: 0.88 }
+};
+const gentleVoiceFallbackHints = [
+  "zira",
+  "hazel",
+  "heera",
+  "eva",
+  "victoria"
+];
+
+function pickSweetGirlVoice(voices = []) {
+  if (!voices.length) return null;
+
+  const englishVoices = voices.filter((voice) =>
+    voice.lang?.toLowerCase().startsWith("en") || voice.name.toLowerCase().includes("english")
+  );
+  const candidates = englishVoices.length ? englishVoices : voices;
+
+  return candidates
+    .map((voice, index) => {
+      const name = voice.name.toLowerCase();
+      let score = 0;
+
+      gentleLowVoiceHints.forEach((hint, hintIndex) => {
+        if (name.includes(hint)) score += 60 - hintIndex;
+      });
+
+      gentleVoiceFallbackHints.forEach((hint) => {
+        if (name.includes(hint)) score += 8;
+      });
+
+      if (voice.localService === false) score += 16;
+      if (voice.default) score += 3;
+
+      harshVoiceHints.forEach((hint) => {
+        if (name.includes(hint)) score -= 90;
+      });
+
+      return { voice, score, index };
+    })
+    .sort((a, b) => b.score - a.score || a.index - b.index)[0]?.voice;
+}
+
+function generateOtpCode() {
+  if (window.crypto?.getRandomValues) {
+    const buffer = new Uint32Array(1);
+    window.crypto.getRandomValues(buffer);
+    return String(buffer[0] % 1000000).padStart(6, "0");
+  }
+
+  return String(Math.floor(Math.random() * 1000000)).padStart(6, "0");
+}
+
+function normaliseEmail(email) {
+  return email.trim().toLowerCase();
+}
+
+function formatOtpInput(value) {
+  return value.replace(/\D/g, "").slice(0, 6);
+}
+
+async function sendOtpEmail({ email, name, otp }) {
+  if (!EMAILJS_PUBLIC_KEY) {
+    throw new Error("Missing EmailJS public key. Add VITE_EMAILJS_PUBLIC_KEY to your .env file.");
+  }
+
+  const response = await fetch(EMAILJS_SEND_ENDPOINT, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      service_id: EMAILJS_SERVICE_ID,
+      template_id: EMAILJS_TEMPLATE_ID,
+      user_id: EMAILJS_PUBLIC_KEY,
+      template_params: {
+        to_email: email,
+        to_name: name || email.split("@")[0],
+        otp_code: otp,
+        app_name: "HEXA Cyber Range"
+      }
+    })
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || "EmailJS could not send the verification code.");
+  }
+}
+
+async function sendFeedbackEmail({ profile, level, score, rating, comment }) {
+  if (!EMAILJS_PUBLIC_KEY) {
+    throw new Error("Missing EmailJS public key. Add VITE_EMAILJS_PUBLIC_KEY to your .env file.");
+  }
+
+  const playerName = profile?.name?.trim() || "Verified HEXA Player";
+  const playerEmail = profile?.email || FEEDBACK_TO_EMAIL;
+  const submittedAt = new Date().toLocaleString();
+
+  const response = await fetch(EMAILJS_SEND_ENDPOINT, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      service_id: EMAILJS_SERVICE_ID,
+      template_id: EMAILJS_FEEDBACK_TEMPLATE_ID,
+      user_id: EMAILJS_PUBLIC_KEY,
+      template_params: {
+        to_email: FEEDBACK_TO_EMAIL,
+        player_name: playerName,
+        player_email: playerEmail,
+        rating: String(rating),
+        category: "Game Review",
+        game_mode: levelInfo[level]?.title || level || "HEXA Mission",
+        score: `${score}/15`,
+        feedback_message: comment?.trim() || "No written feedback provided.",
+        submitted_at: submittedAt,
+        app_name: "HEXA Cyber Range"
+      }
+    })
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || "EmailJS could not send the feedback email.");
+  }
+
+  return submittedAt;
+}
+
 function parseCSV(csvText) {
   const rows = [];
   let currentRow = [];
@@ -168,18 +349,7 @@ function writeLocal(key, value) {
 }
 
 function getStatsKey(profile) {
-  return `hexa_stats_${profile?.email || "guest"}`;
-}
-
-async function hashPassword(password) {
-  if (!window.crypto?.subtle) return btoa(password);
-
-  const bytes = new TextEncoder().encode(password);
-  const digest = await window.crypto.subtle.digest("SHA-256", bytes);
-
-  return Array.from(new Uint8Array(digest))
-    .map((byte) => byte.toString(16).padStart(2, "0"))
-    .join("");
+  return `hexa_stats_${profile?.email || "unverified"}`;
 }
 
 function stopSpeaking() {
@@ -388,6 +558,16 @@ function SceneEffects({ intense = false, logoPalette = false }) {
 function HomeArenaEffects() {
   return (
     <div className="home-arena-effects" aria-hidden="true">
+      <span className="arena-perspective-grid"></span>
+      <span className="arena-data-lane lane-one"></span>
+      <span className="arena-data-lane lane-two"></span>
+      <span className="arena-data-lane lane-three"></span>
+      <span className="arena-scan scan-one"></span>
+      <span className="arena-scan scan-two"></span>
+      <span className="arena-hex-ring ring-blue"></span>
+      <span className="arena-hex-ring ring-orange"></span>
+      <span className="arena-pulse pulse-one"></span>
+      <span className="arena-pulse pulse-two"></span>
       <span className="arena-depth-glow glow-blue"></span>
       <span className="arena-depth-glow glow-orange"></span>
       <span className="arena-flame flame-blue flame-blue-one"></span>
@@ -527,15 +707,16 @@ function IntroScreen({ loading, error }) {
 }
 
 function PortalScreen({
-  authMode,
-  setAuthMode,
   form,
   setForm,
   authError,
-  onSubmit,
-  onGuest,
-  savedProfile,
-  onResume,
+  otpStatus,
+  otpStep,
+  sendingOtp,
+  onSendOtp,
+  onVerifyOtp,
+  onResendOtp,
+  onChangeEmail,
   controls
 }) {
   return (
@@ -546,93 +727,106 @@ function PortalScreen({
 
       <section className="portal-layout">
         <div className="portal-copy">
-          <p className="eyebrow">SECURE TRAINING TERMINAL</p>
-          <h1>Enter the range.</h1>
+          <p className="eyebrow">GMAIL OTP PROTECTED TERMINAL</p>
+          <h1>Verify to enter.</h1>
           <p>
-            Sign in to keep your best scores and bike points on this device,
-            or launch a guest session immediately.
+            The HEXA game home page is locked until a real 6-digit verification
+            code is sent to your Gmail and entered correctly.
           </p>
           <div className="terminal-lines">
-            <span><i></i> ADAPTIVE AUDIO READY</span>
-            <span><i></i> 45 SCENARIOS INDEXED</span>
-            <span><i></i> THREE DIFFICULTY PHASES ONLINE</span>
+            <span><i></i> EMAILJS SERVICE CONNECTED</span>
+            <span><i></i> 6-DIGIT GMAIL CODE REQUIRED</span>
+            <span><i></i> GAME ACCESS BLOCKED UNTIL VERIFIED</span>
           </div>
         </div>
 
         <section className="terminal-card panel-3d">
           <div className="terminal-bar">
-            <span>HEXA_LOGIN_PORTAL</span>
-            <span>LOCAL DEMO ACCESS</span>
+            <span>HEXA_GMAIL_OTP</span>
+            <span>EMAIL VERIFICATION ONLY</span>
           </div>
 
-          <div className="auth-tabs">
-            <button
-              className={authMode === "login" ? "active" : ""}
-              onClick={() => setAuthMode("login")}
-            >
-              LOGIN
-            </button>
-            <button
-              className={authMode === "signup" ? "active" : ""}
-              onClick={() => setAuthMode("signup")}
-            >
-              SIGN UP
-            </button>
+          <div className="otp-stepper" aria-label="Verification progress">
+            <span className={otpStep === "email" ? "active" : "complete"}>1. SEND CODE</span>
+            <span className={otpStep === "verify" ? "active" : ""}>2. VERIFY OTP</span>
           </div>
 
-          <form onSubmit={onSubmit}>
-            {authMode === "signup" && (
+          {otpStep === "email" ? (
+            <form onSubmit={onSendOtp}>
               <label>
-                <span>CALLSIGN / NAME</span>
+                <span>YOUR NAME</span>
                 <input
                   required
                   value={form.name}
                   onChange={(event) => setForm({ ...form, name: event.target.value })}
                   placeholder="Your display name"
+                  autoComplete="name"
                 />
               </label>
-            )}
-            <label>
-              <span>EMAIL</span>
-              <input
-                required
-                type="email"
-                value={form.email}
-                onChange={(event) => setForm({ ...form, email: event.target.value })}
-                placeholder="player@example.com"
-              />
-            </label>
-            <label>
-              <span>PASSCODE</span>
-              <input
-                required
-                type="password"
-                minLength="4"
-                value={form.password}
-                onChange={(event) => setForm({ ...form, password: event.target.value })}
-                placeholder="Minimum 4 characters"
-              />
-            </label>
 
-            {authError && <p className="form-error">{authError}</p>}
+              <label>
+                <span>GMAIL / EMAIL ADDRESS</span>
+                <input
+                  required
+                  type="email"
+                  value={form.email}
+                  onChange={(event) => setForm({ ...form, email: event.target.value })}
+                  placeholder="yourgmail@gmail.com"
+                  autoComplete="email"
+                />
+              </label>
 
-            <button className="primary-btn" type="submit">
-              {authMode === "signup" ? "CREATE LOCAL PROFILE" : "ACCESS TERMINAL"}
-            </button>
-          </form>
+              {authError && <p className="form-error">{authError}</p>}
+              {otpStatus && <p className="form-success">{otpStatus}</p>}
 
-          {savedProfile && (
-            <button className="resume-btn" onClick={onResume}>
-              Resume as {savedProfile.name}
-            </button>
+              <button className="primary-btn" type="submit" disabled={sendingOtp}>
+                {sendingOtp ? "SENDING CODE..." : "SEND GMAIL VERIFICATION CODE"}
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={onVerifyOtp}>
+              <div className="otp-sent-box">
+                <span>Code sent to</span>
+                <strong>{normaliseEmail(form.email)}</strong>
+              </div>
+
+              <label>
+                <span>6-DIGIT VERIFICATION CODE</span>
+                <input
+                  required
+                  inputMode="numeric"
+                  pattern="[0-9]{6}"
+                  maxLength="6"
+                  value={form.otp}
+                  onChange={(event) =>
+                    setForm({ ...form, otp: formatOtpInput(event.target.value) })
+                  }
+                  placeholder="Enter 6 digit code"
+                  autoComplete="one-time-code"
+                />
+              </label>
+
+              {authError && <p className="form-error">{authError}</p>}
+              {otpStatus && <p className="form-success">{otpStatus}</p>}
+
+              <button className="primary-btn" type="submit">
+                VERIFY & OPEN GAME
+              </button>
+
+              <div className="otp-actions">
+                <button type="button" onClick={onResendOtp} disabled={sendingOtp}>
+                  {sendingOtp ? "SENDING..." : "RESEND CODE"}
+                </button>
+                <button type="button" onClick={onChangeEmail}>
+                  CHANGE EMAIL
+                </button>
+              </div>
+            </form>
           )}
 
-          <button className="guest-btn" onClick={onGuest}>
-            PLAY AS GUEST
-          </button>
           <small>
-            Prototype portal: profiles are stored locally in this browser. Use a
-            server authentication service before a public release.
+            No passcode login, no guest access, and no demo OTP fallback is used. The home
+            page opens only after the Gmail verification code is correct.
           </small>
         </section>
       </section>
@@ -640,22 +834,46 @@ function PortalScreen({
   );
 }
 
-function TopNavigation({ profile, screen, onHome, onDashboard, onLogout, controls }) {
+function TopNavigation({ profile, screen, onHome, onModes, onDashboard, onLogout, controls }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  function goTo(target) {
+    target();
+    setMenuOpen(false);
+  }
+
   return (
     <header className="home-nav app-nav">
-      <button className="brand brand-button" onClick={onHome}>
+      <button className="brand brand-button" onClick={() => goTo(onHome)}>
         <HexMark small />
         <span>HEXA <b>/</b> CYBER RANGE</span>
       </button>
 
-      <nav>
-        <button className={screen === "home" ? "active" : ""} onClick={onHome}>MISSIONS</button>
-        <button className={screen === "dashboard" ? "active" : ""} onClick={onDashboard}>DASHBOARD</button>
-      </nav>
-
       <div className="nav-profile">
-        <span>{profile?.name || "Guest"}</span>
-        <button onClick={onLogout}>LOG OUT</button>
+        <span>{profile?.name || "Verified Player"}</span>
+      </div>
+
+      <div className="hamburger-wrap">
+        <button
+          className={`hamburger-button ${menuOpen ? "active" : ""}`}
+          type="button"
+          aria-label="Open navigation menu"
+          aria-expanded={menuOpen}
+          onClick={() => setMenuOpen((open) => !open)}
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        {menuOpen && (
+          <nav className="hamburger-menu">
+            <button className={screen === "home" ? "active" : ""} onClick={() => goTo(onHome)}>HOME SCREEN</button>
+            <button className={screen === "modes" ? "active" : ""} onClick={() => goTo(onModes)}>3 GAME MODES</button>
+            <button className={screen === "dashboard" ? "active" : ""} onClick={() => goTo(onDashboard)}>DASHBOARD</button>
+            <button className="danger" onClick={() => goTo(onLogout)}>LOG OUT</button>
+          </nav>
+        )}
       </div>
 
       <AudioDock {...controls} compact />
@@ -664,52 +882,73 @@ function TopNavigation({ profile, screen, onHome, onDashboard, onLogout, control
 }
 
 function HomeScreen({
-  questions,
   profile,
-  stats,
-  onChooseLevel,
   navigation,
-  onInstructions
+  onInstructions,
+  onOpenModes
 }) {
   return (
-    <main className="app home-screen arena-screen" style={{ backgroundImage: `url(${hexaHomeArena})` }}>
+    <main className="app home-screen arena-screen fixed-page" style={{ backgroundImage: `url(${hexaHomeArena})` }}>
       <div className="home-overlay"></div>
       <HomeArenaEffects />
 
-      <section className="home-shell">
+      <section className="home-shell one-page-home-shell">
         <TopNavigation {...navigation} />
 
-        <div className="hero">
-          <div className="home-brand-bounce">
-            <img src={hexaGroupLogo} alt="" />
-            <span>HEXA</span>
-          </div>
-          <p className="eyebrow">WELCOME BACK, {(profile?.name || "GUEST").toUpperCase()}</p>
-          <h1>
-            THINK FAST.
-            <span>RUN SMART.</span>
-          </h1>
-          <p className="hero-copy">
-            Solve cyber-safety scenarios, unlock 20-second 3D bike rides, and build
-            your first-try score across the range.
-          </p>
-
-          <div className="hero-actions">
-            <button className="primary-btn" onClick={onInstructions}>HOW TO PLAY</button>
-            <span><b>{stats.runnerPoints}</b> TOTAL BIKE POINTS</span>
-          </div>
-        </div>
-
-        <section className="mode-section">
-          <div className="section-heading">
-            <div>
-              <p className="eyebrow">SELECT ACCESS LEVEL</p>
-              <h2>Choose your 3D bike mission</h2>
+        <section className="home-one-page-layout">
+          <div className="hero home-hero-fixed">
+            <div className="home-brand-bounce">
+              <img src={hexaGroupLogo} alt="" />
+              <span>HEXA</span>
             </div>
-            <p>Each track escalates through five Easy, five Medium, and five Hard scenarios.</p>
-          </div>
+            <p className="eyebrow">WELCOME BACK, {(profile?.name || "VERIFIED PLAYER").toUpperCase()}</p>
+            <h1>
+              THINK FAST.
+              <span>RUN SMART.</span>
+            </h1>
+            <p className="hero-copy">
+              Your game home is now a single fixed screen. Use the hamburger menu or
+              the launch button to open the 3 mode selection page.
+            </p>
 
-          <div className="level-grid">
+            <div className="hero-actions">
+              <button className="primary-btn" onClick={onOpenModes}>OPEN 3 MODES</button>
+              <button className="ghost-btn" onClick={onInstructions}>HOW TO PLAY</button>
+            </div>
+          </div>
+        </section>
+      </section>
+    </main>
+  );
+}
+
+function ModesScreen({
+  questions,
+  stats,
+  onChooseLevel,
+  navigation
+}) {
+  return (
+    <main className="app modes-screen arena-screen fixed-page" style={{ backgroundImage: `url(${hexaHomeArena})` }}>
+      <div className="home-overlay"></div>
+      <HomeArenaEffects />
+
+      <section className="home-shell modes-shell">
+        <TopNavigation {...navigation} />
+
+        <section className="modes-page-head">
+          <div>
+            <p className="eyebrow">SELECT GAME MODE</p>
+            <h1>Choose your cyber mission</h1>
+          </div>
+          <p>
+            Pick one of the 3 modes below. Use the hamburger icon to return to the
+            home screen anytime.
+          </p>
+        </section>
+
+        <section className="mode-section modes-page-section">
+          <div className="level-grid modes-page-grid">
             {Object.entries(levelInfo).map(([key, item], index) => {
               const questionCount = questions.filter((question) => question.level === key).length;
 
@@ -759,7 +998,7 @@ function DashboardScreen({ profile, stats, navigation }) {
 
         <section className="dashboard-head">
           <p className="eyebrow">PLAYER DASHBOARD</p>
-          <h1>{profile?.name || "Guest"} / Range report</h1>
+          <h1>{profile?.name || "Verified Player"} / Range report</h1>
           <p>Your progress is stored on this device. Push each mode toward a perfect 15.</p>
         </section>
 
@@ -812,10 +1051,19 @@ function BikeRewardStage({ level, questionIndex, onComplete }) {
   const difficulty = stageNames[Math.min(2, Math.floor(questionIndex / 5))].toLowerCase();
   const rideLevel = Math.min(10, questionIndex + 1);
   const src = `/bike-game/index.html?embed=1&mode=${difficulty}&seconds=20&level=${rideLevel}`;
+  const bikeControlKeys = useMemo(
+    () => new Set(["a", "d", "w", "s", "arrowleft", "arrowright", "arrowup", "arrowdown", "p"]),
+    []
+  );
 
   useEffect(() => {
     completionRef.current = onComplete;
   }, [onComplete]);
+
+  const focusBikeFrame = useCallback(() => {
+    frameRef.current?.focus();
+    frameRef.current?.contentWindow?.focus();
+  }, []);
 
   useEffect(() => {
     function receiveBikeSummary(event) {
@@ -828,6 +1076,7 @@ function BikeRewardStage({ level, questionIndex, onComplete }) {
       }
 
       completionRef.current({
+        reason: event.data.reason === "quit" ? "quit" : "complete",
         points: Number(event.data.points) || 0,
         collected: Number(event.data.collected) || 0,
         crashes: Number(event.data.crashes) || 0
@@ -838,6 +1087,35 @@ function BikeRewardStage({ level, questionIndex, onComplete }) {
     return () => window.removeEventListener("message", receiveBikeSummary);
   }, []);
 
+  useEffect(() => {
+    function relayBikeKey(event, isDown) {
+      const key = event.key.toLowerCase();
+
+      if (!bikeControlKeys.has(key)) return;
+
+      event.preventDefault();
+      frameRef.current?.contentWindow?.postMessage(
+        {
+          type: "hexa-bike-key",
+          key,
+          isDown
+        },
+        window.location.origin
+      );
+    }
+
+    const onKeyDown = (event) => relayBikeKey(event, true);
+    const onKeyUp = (event) => relayBikeKey(event, false);
+
+    window.addEventListener("keydown", onKeyDown, { capture: true });
+    window.addEventListener("keyup", onKeyUp, { capture: true });
+
+    return () => {
+      window.removeEventListener("keydown", onKeyDown, { capture: true });
+      window.removeEventListener("keyup", onKeyUp, { capture: true });
+    };
+  }, [bikeControlKeys]);
+
   return (
     <main className={`app bike-reward-screen ${level}`}>
       <iframe
@@ -846,6 +1124,8 @@ function BikeRewardStage({ level, questionIndex, onComplete }) {
         src={src}
         title={`${levelInfo[level].title} 3D bike reward stage`}
         allow="autoplay"
+        tabIndex="0"
+        onLoad={focusBikeFrame}
       />
     </main>
   );
@@ -918,53 +1198,60 @@ function QuizScreen({
               </span>
             </div>
 
-            <div className="scenario-brief">
-              <span className="brief-label">SITUATION REPORT</span>
-              <p>{question.story}</p>
-            </div>
-
-            <h2>{question.question}</h2>
-            <p className="answer-instruction">Choose the safest response. Wrong answers must be resolved.</p>
-
-            <div className="answers">
-              {question.options.map((option, index) => {
-                let className = "answer-btn";
-
-                if (selectedAnswer !== null) {
-                  if (index === question.correct) className += " correct";
-                  else if (index === selectedAnswer) className += " wrong";
-                  else className += " muted";
-                }
-
-                return (
-                  <button
-                    key={option}
-                    className={className}
-                    disabled={selectedAnswer !== null}
-                    onClick={() => onAnswer(index)}
-                  >
-                    <span className="option-letter">{String.fromCharCode(65 + index)}</span>
-                    <span className="option-copy">{option}</span>
-                    <span className="option-state" aria-hidden="true">
-                      {index === question.correct && selectedAnswer !== null ? "OK" : "+"}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {selectedAnswer !== null && (
-              <div className={`feedback ${isCorrect ? "success" : "review"}`}>
-                <div>
-                  <p className="eyebrow">{isCorrect ? "ANSWER VERIFIED" : "RETRY REQUIRED"}</p>
-                  <h3>{isCorrect ? "Correct. Bike ride unlocked." : "Not quite. Resolve the signal."}</h3>
-                  <p>{question.explanation}</p>
+            <div className="quiz-card-grid">
+              <div className="quiz-prompt-column">
+                <div className="scenario-brief">
+                  <span className="brief-label">SITUATION REPORT</span>
+                  <p>{question.story}</p>
                 </div>
-                <button className="primary-btn" onClick={isCorrect ? onRun : onRetry}>
-                  {isCorrect ? "START 20-SECOND BIKE RIDE >" : "TRY QUESTION AGAIN"}
-                </button>
+
+                <h2>{question.question}</h2>
               </div>
-            )}
+
+              <div className="quiz-response-column">
+                <p className="answer-instruction">Choose the safest response. Wrong answers must be resolved.</p>
+
+                <div className="answers">
+                  {question.options.map((option, index) => {
+                    let className = "answer-btn";
+
+                    if (selectedAnswer !== null) {
+                      if (index === question.correct) className += " correct";
+                      else if (index === selectedAnswer) className += " wrong";
+                      else className += " muted";
+                    }
+
+                    return (
+                      <button
+                        key={option}
+                        className={className}
+                        disabled={selectedAnswer !== null}
+                        onClick={() => onAnswer(index)}
+                      >
+                        <span className="option-letter">{String.fromCharCode(65 + index)}</span>
+                        <span className="option-copy">{option}</span>
+                        <span className="option-state" aria-hidden="true">
+                          {index === question.correct && selectedAnswer !== null ? "OK" : "+"}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {selectedAnswer !== null && (
+                  <div className={`feedback ${isCorrect ? "success" : "review"}`}>
+                    <div>
+                      <p className="eyebrow">{isCorrect ? "ANSWER VERIFIED" : "RETRY REQUIRED"}</p>
+                      <h3>{isCorrect ? "Correct. Bike ride unlocked." : "Not quite. Resolve the signal."}</h3>
+                      <p>{question.explanation}</p>
+                    </div>
+                    <button className="primary-btn" onClick={isCorrect ? onRun : onRetry}>
+                      {isCorrect ? "START 20-SECOND BIKE RIDE >" : "TRY QUESTION AGAIN"}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
           </section>
         </div>
       </section>
@@ -972,21 +1259,53 @@ function QuizScreen({
   );
 }
 
-function ReviewModal({ level, score, onSave, onClose }) {
+function ReviewModal({ level, score, profile, onSave, onClose }) {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
+  const [sendingFeedback, setSendingFeedback] = useState(false);
+  const [feedbackError, setFeedbackError] = useState("");
   const modeTitle = levelInfo[level]?.title || "HEXA";
+
+  async function handleSendFeedback() {
+    if (rating === 0 || sendingFeedback) return;
+
+    setFeedbackError("");
+    setSendingFeedback(true);
+
+    try {
+      const emailedAt = await sendFeedbackEmail({
+        profile,
+        level,
+        score,
+        rating,
+        comment
+      });
+
+      onSave({ rating, comment, emailedAt });
+    } catch (error) {
+      console.error(error);
+      setFeedbackError(error.message || "Could not send feedback to Gmail. Please check EmailJS settings.");
+    } finally {
+      setSendingFeedback(false);
+    }
+  }
 
   return (
     <div className="modal-backdrop">
       <section className="modal-panel review-panel panel-3d" role="dialog" aria-modal="true">
         <button className="modal-close" onClick={onClose} aria-label="Close review">X</button>
-        <p className="eyebrow">MODE COMPLETE | QUICK GAME REVIEW</p>
-        <h2>Rate your {modeTitle} run.</h2>
+        <p className="eyebrow">MODE COMPLETE | GMAIL FEEDBACK</p>
+        <h2>Send feedback for your {modeTitle} run.</h2>
         <p>
-          You earned <strong>{score}/15</strong> first-try points. Choose a star rating
-          and tell us how the next ride can improve.
+          You earned <strong>{score}/15</strong> first-try points. Your review will be
+          sent to <strong>{FEEDBACK_TO_EMAIL}</strong> through the same EmailJS Gmail service.
         </p>
+
+        <div className="feedback-recipient">
+          <span>From</span>
+          <strong>{profile?.name || "Verified Player"}</strong>
+          <small>{profile?.email || "Verified Gmail account"}</small>
+        </div>
 
         <div className="rating-stars" aria-label="Game rating">
           {[1, 2, 3, 4, 5].map((star) => (
@@ -996,6 +1315,7 @@ function ReviewModal({ level, score, onSave, onClose }) {
               onClick={() => setRating(star)}
               aria-label={`${star} star rating`}
               aria-pressed={star <= rating}
+              disabled={sendingFeedback}
             >
               STAR
             </button>
@@ -1006,14 +1326,21 @@ function ReviewModal({ level, score, onSave, onClose }) {
           value={comment}
           onChange={(event) => setComment(event.target.value)}
           placeholder="What should the next mission improve?"
+          disabled={sendingFeedback}
         />
+
+        {feedbackError && <p className="form-error">{feedbackError}</p>}
 
         <button
           className="primary-btn"
-          disabled={rating === 0}
-          onClick={() => onSave({ rating, comment })}
+          disabled={rating === 0 || sendingFeedback}
+          onClick={handleSendFeedback}
         >
-          {rating === 0 ? "CHOOSE A STAR RATING" : "SAVE REVIEW"}
+          {sendingFeedback
+            ? "SENDING TO GMAIL..."
+            : rating === 0
+              ? "CHOOSE A STAR RATING"
+              : "SEND FEEDBACK TO GMAIL"}
         </button>
       </section>
     </div>
@@ -1066,13 +1393,17 @@ function App() {
   const [musicOn, setMusicOn] = useState(true);
   const [volume, setVolume] = useState(0.16);
   const [voiceOn, setVoiceOn] = useState(true);
+  const [narrationVoice, setNarrationVoice] = useState(null);
   const [instructionsOpen, setInstructionsOpen] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
-  const [profile, setProfile] = useState(() => readLocal("hexa_session", null));
+  const [profile, setProfile] = useState(null);
   const [stats, setStats] = useState(defaultStats);
-  const [authMode, setAuthMode] = useState("login");
   const [authError, setAuthError] = useState("");
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [otpStatus, setOtpStatus] = useState("");
+  const [otpStep, setOtpStep] = useState("email");
+  const [otpRequest, setOtpRequest] = useState(null);
+  const [sendingOtp, setSendingOtp] = useState(false);
+  const [form, setForm] = useState({ name: "", email: "", otp: "" });
   const [selectedLevel, setSelectedLevel] = useState(null);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
@@ -1167,22 +1498,54 @@ function App() {
   }, [screen]);
 
   useEffect(() => {
+    const protectedScreens = ["home", "modes", "dashboard", "quiz", "runner", "result"];
+
+    if (!profile && protectedScreens.includes(screen)) {
+      setScreen("portal");
+    }
+  }, [profile, screen]);
+
+  useEffect(() => {
     setStats(readLocal(getStatsKey(profile), defaultStats));
   }, [profile]);
 
+  useEffect(() => {
+    if (!window.speechSynthesis) return;
+
+    function loadNarrationVoice() {
+      setNarrationVoice(pickSweetGirlVoice(window.speechSynthesis.getVoices()));
+    }
+
+    loadNarrationVoice();
+    window.speechSynthesis.addEventListener?.("voiceschanged", loadNarrationVoice);
+
+    return () => {
+      window.speechSynthesis.removeEventListener?.("voiceschanged", loadNarrationVoice);
+    };
+  }, []);
+
   const speak = useCallback(
-    (text, rate = 0.95, pitch = 1) => {
+    (text, profile = sweetLowSpeechProfile) => {
       if (!voiceOn || !window.speechSynthesis) return;
 
       stopSpeaking();
 
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = rate;
-      utterance.pitch = pitch;
-      utterance.volume = 1;
+      const voice = narrationVoice || pickSweetGirlVoice(window.speechSynthesis.getVoices());
+
+      if (voice) {
+        utterance.voice = voice;
+        utterance.lang = voice.lang || "en-GB";
+      } else {
+        utterance.lang = "en-GB";
+      }
+
+      utterance.rate = profile.rate;
+      utterance.pitch = profile.pitch;
+      utterance.volume = profile.volume;
       window.speechSynthesis.speak(utterance);
     },
-    [voiceOn]
+    [narrationVoice, voiceOn]
   );
 
   const speakQuestion = useCallback(
@@ -1191,8 +1554,7 @@ function App() {
 
       speak(
         `${question.story}. ${question.question}. Option A: ${question.options[0]}. Option B: ${question.options[1]}. Option C: ${question.options[2]}. Option D: ${question.options[3]}.`,
-        selectedLevel === "kids" ? 0.86 : 0.95,
-        selectedLevel === "kids" ? 1.12 : 1
+        questionSpeechProfiles[selectedLevel] || sweetLowSpeechProfile
       );
     },
     [currentQuestion, selectedLevel, speak]
@@ -1210,62 +1572,103 @@ function App() {
     writeLocal(getStatsKey(profile), nextStats);
   }
 
-  async function handleAuthSubmit(event) {
+  async function requestOtp({ keepOtpValue = false } = {}) {
+    setAuthError("");
+    setOtpStatus("");
+
+    const email = normaliseEmail(form.email);
+    const name = form.name.trim();
+
+    if (!name) {
+      setAuthError("Please enter your name before requesting the code.");
+      return;
+    }
+
+    if (!email || !email.includes("@")) {
+      setAuthError("Please enter a valid Gmail or email address.");
+      return;
+    }
+
+    const otp = generateOtpCode();
+    const expiresAt = Date.now() + OTP_EXPIRY_MS;
+
+    setSendingOtp(true);
+
+    try {
+      await sendOtpEmail({ email, name, otp });
+      setOtpRequest({ email, name, otp, expiresAt });
+      setOtpStep("verify");
+      setForm((current) => ({
+        ...current,
+        email,
+        name,
+        otp: keepOtpValue ? current.otp : ""
+      }));
+      setOtpStatus("A real 6-digit verification code has been sent to your email. It expires in 5 minutes.");
+    } catch (error) {
+      console.error(error);
+      setAuthError(error.message || "Could not send the Gmail verification code. Please check EmailJS settings.");
+    } finally {
+      setSendingOtp(false);
+    }
+  }
+
+  async function handleSendOtp(event) {
+    event.preventDefault();
+    await requestOtp();
+  }
+
+  async function handleResendOtp() {
+    await requestOtp();
+  }
+
+  function handleChangeEmail() {
+    setOtpStep("email");
+    setOtpRequest(null);
+    setAuthError("");
+    setOtpStatus("");
+    setForm((current) => ({ ...current, otp: "" }));
+  }
+
+  function handleVerifyOtp(event) {
     event.preventDefault();
     setAuthError("");
+    setOtpStatus("");
 
-    const email = form.email.trim().toLowerCase();
-    const passwordHash = await hashPassword(form.password);
-    const accounts = readLocal("hexa_accounts", []);
+    const submittedOtp = formatOtpInput(form.otp);
+    const email = normaliseEmail(form.email);
 
-    if (authMode === "signup") {
-      if (accounts.some((account) => account.email === email)) {
-        setAuthError("That email already has a local profile.");
-        return;
-      }
-
-      const account = {
-        name: form.name.trim(),
-        email,
-        passwordHash
-      };
-
-      writeLocal("hexa_accounts", [...accounts, account]);
-      writeLocal("hexa_session", { name: account.name, email: account.email });
-      setProfile({ name: account.name, email: account.email });
-      setScreen("home");
+    if (!otpRequest || otpRequest.email !== email) {
+      setAuthError("Please request a fresh verification code for this email.");
+      setOtpStep("email");
       return;
     }
 
-    const account = accounts.find(
-      (item) => item.email === email && item.passwordHash === passwordHash
-    );
-
-    if (!account) {
-      setAuthError("Local profile not found or passcode is incorrect.");
+    if (Date.now() > otpRequest.expiresAt) {
+      setAuthError("This verification code has expired. Please resend a new code.");
       return;
     }
 
-    writeLocal("hexa_session", { name: account.name, email: account.email });
-    setProfile({ name: account.name, email: account.email });
-    setScreen("home");
-  }
+    if (submittedOtp !== otpRequest.otp) {
+      setAuthError("Incorrect verification code. Please check your Gmail and enter the 6 digits exactly.");
+      return;
+    }
 
-  function useGuest() {
-    const guestProfile = { name: "Guest Player", email: "guest", guest: true };
-    writeLocal("hexa_session", guestProfile);
-    setProfile(guestProfile);
+    const verifiedProfile = { name: otpRequest.name, email: otpRequest.email, verifiedAt: new Date().toISOString() };
+    setProfile(verifiedProfile);
+    setOtpRequest(null);
+    setForm({ name: otpRequest.name, email: otpRequest.email, otp: "" });
     setScreen("home");
-  }
-
-  function resumeSession() {
-    if (profile) setScreen("home");
   }
 
   function logout() {
     stopSpeaking();
-    localStorage.removeItem("hexa_session");
     setProfile(null);
+    setOtpStep("email");
+    setOtpRequest(null);
+    setAuthError("");
+    setOtpStatus("");
+    setForm({ name: "", email: "", otp: "" });
     setScreen("portal");
   }
 
@@ -1288,12 +1691,12 @@ function App() {
     if (index === currentQuestion.correct) {
       if (pointEligible) setScore((current) => current + 1);
       playSfx("correct");
-      speak(`Correct. ${currentQuestion.explanation}. You unlocked a twenty second three D bike ride.`);
+      speak(`Great job. ${currentQuestion.explanation}. You unlocked a twenty second three D bike ride.`);
     } else {
       setMistakes((current) => current + 1);
       setPointEligible(false);
       playSfx("wrong");
-      speak(`Not quite. ${currentQuestion.explanation}. Review the signal and try the question again.`);
+      speak(`Good try. ${currentQuestion.explanation}. Review the signal, and try the question again.`);
     }
   }
 
@@ -1308,6 +1711,12 @@ function App() {
   }
 
   function completeRunner(summary) {
+    if (summary.reason === "quit") {
+      stopSpeaking();
+      setScreen("home");
+      return;
+    }
+
     const nextRunnerPoints = runnerPoints + summary.points;
     setRunnerPoints(nextRunnerPoints);
 
@@ -1332,7 +1741,7 @@ function App() {
     persistStats(nextStats);
     setScreen("result");
     setTimeout(() => setReviewOpen(true), 1200);
-    speak(`Mission complete. Your first try score is ${score} out of 15.`);
+    speak(`Mission complete. Nice work. Your first try score is ${score} out of 15.`);
   }
 
   function saveReview(review) {
@@ -1360,8 +1769,9 @@ function App() {
   const navigation = {
     profile,
     screen,
-    onHome: () => setScreen("home"),
-    onDashboard: () => setScreen("dashboard"),
+    onHome: () => setScreen(profile ? "home" : "portal"),
+    onModes: () => setScreen(profile ? "modes" : "portal"),
+    onDashboard: () => setScreen(profile ? "dashboard" : "portal"),
     onLogout: logout,
     controls
   };
@@ -1372,35 +1782,44 @@ function App() {
 
       {screen === "portal" && (
         <PortalScreen
-          authMode={authMode}
-          setAuthMode={setAuthMode}
           form={form}
           setForm={setForm}
           authError={authError}
-          onSubmit={handleAuthSubmit}
-          onGuest={useGuest}
-          savedProfile={profile}
-          onResume={resumeSession}
+          otpStatus={otpStatus}
+          otpStep={otpStep}
+          sendingOtp={sendingOtp}
+          onSendOtp={handleSendOtp}
+          onVerifyOtp={handleVerifyOtp}
+          onResendOtp={handleResendOtp}
+          onChangeEmail={handleChangeEmail}
           controls={controls}
         />
       )}
 
-      {screen === "home" && (
+      {screen === "home" && profile && (
         <HomeScreen
-          questions={questions}
           profile={profile}
           stats={stats}
-          onChooseLevel={chooseLevel}
           navigation={navigation}
           onInstructions={() => setInstructionsOpen(true)}
+          onOpenModes={() => setScreen("modes")}
         />
       )}
 
-      {screen === "dashboard" && (
+      {screen === "modes" && profile && (
+        <ModesScreen
+          questions={questions}
+          stats={stats}
+          onChooseLevel={chooseLevel}
+          navigation={navigation}
+        />
+      )}
+
+      {screen === "dashboard" && profile && (
         <DashboardScreen profile={profile} stats={stats} navigation={navigation} />
       )}
 
-      {screen === "quiz" && currentQuestion && (
+      {screen === "quiz" && profile && currentQuestion && (
         <QuizScreen
           level={selectedLevel}
           question={currentQuestion}
@@ -1419,7 +1838,7 @@ function App() {
         />
       )}
 
-      {screen === "runner" && (
+      {screen === "runner" && profile && (
         <BikeRewardStage
           level={selectedLevel}
           questionIndex={questionIndex}
@@ -1427,7 +1846,7 @@ function App() {
         />
       )}
 
-      {screen === "result" && (
+      {screen === "result" && profile && (
         <ResultScreen
           level={selectedLevel}
           score={score}
@@ -1443,6 +1862,7 @@ function App() {
         <ReviewModal
           level={selectedLevel}
           score={score}
+          profile={profile}
           onSave={saveReview}
           onClose={() => setReviewOpen(false)}
         />

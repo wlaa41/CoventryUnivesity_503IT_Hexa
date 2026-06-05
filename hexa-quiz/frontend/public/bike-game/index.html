@@ -54,6 +54,7 @@
       display:block;
       background:#050611;
       z-index:0;
+      outline:none;
     }
 
     .screen{
@@ -622,7 +623,7 @@
       transition:.18s ease;
     }
 
-    .touch-btn:hover, .touch-btn:active{
+    .touch-btn:hover, .touch-btn:active, .touch-btn.active{
       border-color:rgba(87,233,255,.72);
       background:rgba(87,233,255,.2);
       box-shadow:0 0 28px rgba(87,233,255,.24);
@@ -689,9 +690,32 @@
       .mobile-controls{ display:flex; }
     }
   </style>
+  <link rel="stylesheet" href="./enhanced-bike.css" />
 </head>
 <body>
-  <canvas id="gameCanvas"></canvas>
+  <canvas id="gameCanvas" tabindex="0"></canvas>
+
+  <div id="rideVignette" class="ride-vignette"></div>
+  <div id="speedLines" class="speed-lines"></div>
+  <div id="digitalRain" class="digital-rain"></div>
+  <div id="scanSweep" class="scan-sweep"></div>
+  <div id="laneFlash" class="lane-flash"></div>
+  <div id="finishFlash" class="finish-flash">
+    <div class="finish-core">
+      <small>HEXA RIDE // DATA RUN COMPLETE</small>
+      <strong>SECTOR SECURED</strong>
+      <span></span>
+    </div>
+  </div>
+  <div id="dangerWarning" class="danger-warning">
+    <span>THREAT DETECTED</span>
+    <strong id="dangerText">BARRIER AHEAD</strong>
+  </div>
+  <div id="countdown" class="ride-countdown"><span>3</span></div>
+  <div id="powerupBanner" class="powerup-banner">
+    <span id="powerupIcon">+</span>
+    <div><small>POWER-UP ACTIVE</small><strong id="powerupText">SHIELD</strong></div>
+  </div>
 
   <!-- Hidden fallback only: the HEXA host app owns the opening splash. -->
   <section id="loadingScreen" class="screen loader-bg">
@@ -781,17 +805,31 @@
 
   <!-- HUD for bike game -->
   <div id="hud" class="hud">
-    <div class="hud-card hud-left">
-      <span class="pill" id="hudMode">Mode: EASY</span>
-      <span class="pill" id="hudLevel">Level: 1 / 10</span>
-      <span class="pill" id="hudSpeed">Speed: 0</span>
+    <div class="hud-card hud-left enhanced-hud-panel">
+      <div class="hud-kicker"><span id="hudMode">EASY</span><b id="hudLevel">LEVEL 1</b></div>
+      <div class="speed-readout">
+        <strong id="hudSpeedValue">000</strong><span>KM/H</span>
+        <div class="meter-track speed-meter"><i id="speedMeterFill"></i></div>
+      </div>
+      <span class="pill legacy-speed-pill" id="hudSpeed">Speed: 0</span>
     </div>
     <div class="hud-card hud-center">
       <div class="timer-ring" id="timerRing"><span id="timeText">20</span></div>
+      <div class="combo-readout" id="comboReadout"><small>SYNC COMBO</small><strong id="comboValue">x1</strong></div>
     </div>
-    <div class="hud-card hud-right">
-      <span class="pill" id="hudScore">Score: 0</span>
-      <span class="pill" id="hudCombo">Combo: x1</span>
+    <div class="hud-card hud-right enhanced-hud-panel">
+      <div class="hud-stat-grid">
+        <span><small>ENERGY</small><b id="hudEnergy">0</b></span>
+        <span><small>CRASHES</small><b id="hudCrashes">0</b></span>
+        <span><small>SHIELD</small><b id="hudShield">OFF</b></span>
+        <span><small>SCORE</small><b id="hudScoreValue">0</b></span>
+      </div>
+      <div class="boost-readout">
+        <span><b>NITRO</b><small id="boostStatus">READY</small></span>
+        <div class="meter-track boost-meter"><i id="boostMeterFill"></i></div>
+      </div>
+      <span class="pill legacy-hud-pill" id="hudScore">Score: 0</span>
+      <span class="pill legacy-hud-pill" id="hudCombo">Combo: x1</span>
       <button class="mini-btn" id="pauseBtn">Pause</button>
       <button class="mini-btn" id="soundBtnHud">🔊</button>
       <button class="mini-btn" id="exitRideBtn">Exit Ride</button>
@@ -950,6 +988,7 @@
         score: 0
       }
     };
+    let embeddedCompletionSent = false;
 
     const modeConfig = {
       easy: {
@@ -1173,6 +1212,7 @@
       scenery: [],
       particles: [],
       keys: {},
+      keyTimers: {},
       spawnObstacleTimer: 0,
       spawnCoinTimer: 0,
       active: false,
@@ -1629,24 +1669,165 @@
       },
 
       bindEvents(){
-        window.addEventListener("keydown", (e)=>{
-          this.keys[e.key.toLowerCase()] = true;
-          if(e.key.toLowerCase() === "p" && state.phase === "bike") togglePause();
+        const handleKey = (e, isDown) => {
+          const key = e.key.toLowerCase();
+
+          if(!this.isControlKey(key)) return;
+
+          e.preventDefault();
+
+          if(key === "p"){
+            if(isDown && !e.repeat && state.phase === "bike") togglePause();
+            this.setKey(key, isDown);
+            return;
+          }
+
+          this.setKey(key, isDown);
+        };
+
+        window.addEventListener("keydown", (e) => handleKey(e, true), { capture:true });
+        window.addEventListener("keyup", (e) => handleKey(e, false), { capture:true });
+        window.addEventListener("message", (event) => {
+          if(
+            event.origin !== window.location.origin ||
+            event.data?.type !== "hexa-bike-key"
+          ){
+            return;
+          }
+
+          const key = String(event.data.key || "").toLowerCase();
+          const isDown = Boolean(event.data.isDown);
+
+          if(!this.isControlKey(key)) return;
+
+          if(key === "p"){
+            if(isDown && !this.keys.p && state.phase === "bike") togglePause();
+            this.setKey(key, isDown);
+            return;
+          }
+
+          this.setKey(key, isDown);
         });
-        window.addEventListener("keyup", (e)=> this.keys[e.key.toLowerCase()] = false);
 
         const hold = (el, key) => {
-          const on = (e) => { e.preventDefault(); this.keys[key] = true; };
-          const off = (e) => { e.preventDefault(); this.keys[key] = false; };
+          const on = (e) => {
+            e.preventDefault();
+            this.focusRide();
+            if(e.pointerId !== undefined && el.setPointerCapture){
+              try{ el.setPointerCapture(e.pointerId); }catch(_e){}
+            }
+            this.setKey(key, true);
+            el.classList.add("active");
+          };
+          const off = (e) => {
+            e.preventDefault();
+            this.setKey(key, false);
+            el.classList.remove("active");
+          };
           el.addEventListener("pointerdown", on);
           el.addEventListener("pointerup", off);
           el.addEventListener("pointercancel", off);
           el.addEventListener("pointerleave", off);
+          el.addEventListener("click", (e) => {
+            e.preventDefault();
+            this.focusRide();
+            this.pulseKey(key, 220, el);
+          });
+          el.addEventListener("contextmenu", (e) => e.preventDefault());
         };
-        hold(ui.touchLeft, "arrowleft");
-        hold(ui.touchRight, "arrowright");
+
+        const laneTap = (el, direction) => {
+          let lastPointerPress = 0;
+          const move = (e) => {
+            e.preventDefault();
+            this.focusRide();
+            lastPointerPress = performance.now();
+            this.moveLane(direction);
+            this.flashButton(el);
+          };
+          el.addEventListener("pointerdown", move);
+          el.addEventListener("click", (e) => {
+            e.preventDefault();
+            this.focusRide();
+            if(performance.now() - lastPointerPress > 300){
+              this.moveLane(direction);
+              this.flashButton(el);
+            }
+          });
+          el.addEventListener("contextmenu", (e) => e.preventDefault());
+        };
+
+        laneTap(ui.touchLeft, -1);
+        laneTap(ui.touchRight, 1);
         hold(ui.touchBoost, "w");
         hold(ui.touchBrake, "s");
+      },
+
+      isControlKey(key){
+        return ["a", "d", "w", "s", "arrowleft", "arrowright", "arrowup", "arrowdown", "p"].includes(key);
+      },
+
+      setKey(key, isDown){
+        if(!this.isControlKey(key)) return;
+        const wasDown = Boolean(this.keys[key]);
+        this.keys[key] = isDown;
+
+        if(isDown && !wasDown){
+          if(key === "a" || key === "arrowleft") this.moveLane(-1);
+          if(key === "d" || key === "arrowright") this.moveLane(1);
+        }
+
+        this.syncControlState();
+      },
+
+      moveLane(direction){
+        if(state.phase !== "bike" || state.paused) return;
+        this.targetLane = Math.max(0, Math.min(2, this.targetLane + direction));
+        this.syncControlState();
+        tone(direction < 0 ? 320 : 420, .06, "square", .05);
+      },
+
+      pulseKey(key, duration = 180, el = null){
+        if(state.phase !== "bike" || state.paused) return;
+        this.setKey(key, true);
+        el?.classList.add("active");
+        clearTimeout(this.keyTimers[key]);
+        this.keyTimers[key] = setTimeout(() => {
+          this.setKey(key, false);
+          el?.classList.remove("active");
+          this.keyTimers[key] = null;
+        }, duration);
+      },
+
+      flashButton(el, duration = 160){
+        el.classList.add("active");
+        clearTimeout(el._hexaFlashTimer);
+        el._hexaFlashTimer = setTimeout(() => el.classList.remove("active"), duration);
+      },
+
+      releaseAllControls(){
+        Object.values(this.keyTimers).forEach((timer) => clearTimeout(timer));
+        this.keyTimers = {};
+        this.keys = {};
+        this.leftLatch = false;
+        this.rightLatch = false;
+        [ui.touchLeft, ui.touchRight, ui.touchBoost, ui.touchBrake].forEach((el) => {
+          el.classList.remove("active");
+        });
+        this.syncControlState();
+      },
+
+      focusRide(){
+        try{
+          window.focus();
+          $("gameCanvas")?.focus({ preventScroll:true });
+        }catch(_e){}
+      },
+
+      syncControlState(){
+        ui.mobileControls.dataset.lane = String(this.targetLane);
+        ui.mobileControls.dataset.laneX = this.laneX.toFixed(2);
+        ui.mobileControls.dataset.speed = String(Math.round(this.speed));
       },
 
       resize(){
@@ -1663,6 +1844,7 @@
         this.laneX = 0;
         this.speed = 0;
         this.distance = 0;
+        this.releaseAllControls();
         this.spawnObstacleTimer = 0;
         this.spawnCoinTimer = 0;
         this.objects.forEach(o => this.scene.remove(o.mesh));
@@ -1709,21 +1891,6 @@
 
         this.targetSpeed = Math.max(16, this.targetSpeed);
         this.speed += (this.targetSpeed - this.speed) * Math.min(1, dt * 2.8);
-
-        // lane movement
-        if((this.keys["a"] || this.keys["arrowleft"]) && !this.leftLatch){
-          this.targetLane = Math.max(0, this.targetLane - 1);
-          this.leftLatch = true;
-          tone(320, .06, "square", .05);
-        }
-        if(!(this.keys["a"] || this.keys["arrowleft"])) this.leftLatch = false;
-
-        if((this.keys["d"] || this.keys["arrowright"]) && !this.rightLatch){
-          this.targetLane = Math.min(2, this.targetLane + 1);
-          this.rightLatch = true;
-          tone(420, .06, "square", .05);
-        }
-        if(!(this.keys["d"] || this.keys["arrowright"])) this.rightLatch = false;
 
         const targetX = this.lanes[this.targetLane];
         this.laneX += (targetX - this.laneX) * Math.min(1, dt * config.steer);
@@ -1976,6 +2143,7 @@
       ui.timeText.textContent = t;
       const deg = (state.bikeTimeLeft / state.bikeSeconds) * 360;
       ui.timerRing.style.setProperty("--deg", `${deg}deg`);
+      Game3D.syncControlState();
     }
 
     function startGame(){
@@ -2085,6 +2253,7 @@
       state.paused = false;
       ui.pauseModal.classList.remove("active");
       Game3D.resetForStage();
+      Game3D.focusRide();
       stopMusic();
       startMusic();
       updateHUD();
@@ -2092,19 +2261,34 @@
     }
 
     function completeEmbeddedReward(reason){
+      if(!embeddedReward || embeddedCompletionSent) return;
+      embeddedCompletionSent = true;
+      state.phase = "done";
+      state.paused = false;
+      Game3D.active = false;
+      Game3D.releaseAllControls();
+      ui.hud.classList.remove("active");
+      ui.mobileControls.style.display = "none";
+      ui.pauseModal.classList.remove("active");
+      stopMusic();
+
+      const targetOrigin = window.location.origin && window.location.origin !== "null"
+        ? window.location.origin
+        : "*";
       window.parent.postMessage({
         type: "hexa-bike-complete",
         reason,
         points: state.stageStats.score,
         collected: state.stageStats.collected,
         crashes: state.stageStats.crashes
-      }, window.location.origin);
+      }, targetOrigin);
     }
 
     function endBikeStage(){
       if(state.phase !== "bike") return;
       state.phase = "result";
       Game3D.active = false;
+      Game3D.releaseAllControls();
       ui.hud.classList.remove("active");
       ui.mobileControls.style.display = "none";
       state.totalScore += state.stageStats.score;
@@ -2169,6 +2353,7 @@
       state.quizCorrect = 0;
       state.combo = 1;
       state.paused = false;
+      Game3D.releaseAllControls();
       ui.hud.classList.remove("active");
       ui.mobileControls.style.display = "none";
       ui.pauseModal.classList.remove("active");
@@ -2219,5 +2404,6 @@
       runLoader();
     }
   </script>
+  <script src="./enhanced-bike.js"></script>
 </body>
 </html>

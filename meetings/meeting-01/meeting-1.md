@@ -145,7 +145,7 @@ emphasised as non-negotiable from day one.
 | Action Item                                                             | Owner               | Deadline    | Priority | Status |
 | ----------------------------------------------------------------------- | ------------------- | ----------- | -------- | ------ |
 | Draft the Project Charter and scope document                            | Sijan Bhandari      | 19 May 2026 | Critical | Open   |
-| Set up the shared OneDrive repository with a clear folder structure     | Abdullah Badhurdeen | 17 May 2026 | High     | Open   |
+| Set up the shared Github repository with a clear folder structure       | Abdullah Badhurdeen | 17 May 2026 | High     | Open   |
 | Draft the Ethics Application Form                                       | Johns Jimee         | 22 May 2026 | High     | Open   |
 | Begin researching game development frameworks for the literature review | Abdullah Badhurdeen | 5 June 2026 | High     | Open   |
 | Prepare a draft Gantt Chart and project timeline                        | Aditya Bhandari     | 19 May 2026 | High     | Open   |

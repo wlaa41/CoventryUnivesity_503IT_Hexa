@@ -1,4 +1,4 @@
-# GitHub Issues — ready to paste
+# GitHub Issues
 
 Open one GitHub Issue per bug. Copy the **Title** into the issue title box and the
 block under it into the description. Add the suggested **labels**, attach your

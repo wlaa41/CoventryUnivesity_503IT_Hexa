@@ -4,40 +4,40 @@
 
 ## Meeting 1 of 11: Project Initiation and Team Formation
 
-> **Team:** Sijan Bhandari · Johns Jimee · Abdullah Badhurdeen · Aditya Bhandari · Sandesh Shah · Nabin Sunar
+> **Team:** Sijan Bhandari · Johns Jimee · Abdhullah Badhurdeen · Aditya Bhandari · Sandesh Shah · Nabin Sunar
 
 ---
 
 ## Administrative Information
 
-| Field | Detail |
-| --- | --- |
-| Meeting Number | Meeting 1 |
-| Meeting Title | Project Initiation and Team Formation |
-| Date | 12 May 2026 |
-| Time | 10:00 am – 12:00 pm |
-| Location | University Classroom — Coventry University Dagenham, London |
-| Chairperson | Sijan Bhandari |
-| Minutes Prepared By | Johns Jimee |
-| Programme | BSc Computing Science |
-| Institution | Coventry University Dagenham, London |
-| Module | BSc Project / Dissertation |
-| Classification | Confidential — Academic Use Only |
+| Field               | Detail                                                      |
+| ------------------- | ----------------------------------------------------------- |
+| Meeting Number      | Meeting 1                                                   |
+| Meeting Title       | Project Initiation and Team Formation                       |
+| Date                | 12 May 2026                                                 |
+| Time                | 10:00 am – 12:00 pm                                         |
+| Location            | University Classroom — Coventry University Dagenham, London |
+| Chairperson         | Sijan Bhandari                                              |
+| Minutes Prepared By | Johns Jimee                                                 |
+| Programme           | BSc Computing Science                                       |
+| Institution         | Coventry University Dagenham, London                        |
+| Module              | BSc Project / Dissertation                                  |
+| Classification      | Confidential — Academic Use Only                            |
 
 ---
 
 ## Attendance Register
 
-| Name | Role / Designation | Programme | Attendance |
-| --- | --- | --- | --- |
-| Sijan Bhandari | Project Lead / Chairperson | BSc Computing Science | Present |
-| Johns Jimee | Secretary / Lead Developer | BSc Computing Science | Present |
-| Abdullah Badhurdeen | Technical Analyst / QA Engineer | BSc Computing Science | Present |
-| Aditya Bhandari | Systems Architect / Planner | BSc Computing Science | Present |
-| Sandesh Shah | Research Associate | BSc Computing Science | Present |
-| Nabin Sunar | Implementation Support | BSc Computing Science | Present |
+| Name                | Role / Designation              | Programme             | Attendance |
+| ------------------- | ------------------------------- | --------------------- | ---------- |
+| Sijan Bhandari      | Project Lead / Chairperson      | BSc Computing Science | Present    |
+| Johns Jimee         | Secretary / Lead Developer      | BSc Computing Science | Present    |
+| Abdullah Badhurdeen | Technical Analyst / QA Engineer | BSc Computing Science | Present    |
+| Aditya Bhandari     | Systems Architect / Planner     | BSc Computing Science | Present    |
+| Sandesh Shah        | Research Associate              | BSc Computing Science | Present    |
+| Nabin Sunar         | Implementation Support          | BSc Computing Science | Present    |
 
-*All team members were present at this meeting.*
+_All team members were present at this meeting._
 
 ---
 
@@ -113,7 +113,7 @@ ethics submission before Meeting 3.
 
 The project got underway drawing on established project management principles —
 particularly PRINCE2 and Agile Scrum — alongside Saunders et al. (2019)
-*Research Methods for Business Students* to guide our research design. Academic
+_Research Methods for Business Students_ to guide our research design. Academic
 integrity, proper citation practices, and systematic evidence gathering were
 emphasised as non-negotiable from day one.
 
@@ -121,12 +121,12 @@ emphasised as non-negotiable from day one.
 
 ## Risk Assessment
 
-| Risk Description | Likelihood | Impact | Mitigation Strategy |
-| --- | --- | --- | --- |
-| Team member unavailability due to competing academic commitments | Medium | High | Cross-train roles and keep shared documentation so any member can step in at short notice |
-| Unclear scope causing the project to drift beyond its original boundaries | High | High | Formalise a scope document in Meeting 2 and agree a change control process |
-| Communication breakdown across the team | Low | Medium | Weekly Teams check-in; WhatsApp group for anything urgent |
-| Ethics approval delays holding up the user testing phase | Medium | High | Submit the ethics form by Week 3 and build a buffer into the Gantt chart |
+| Risk Description                                                          | Likelihood | Impact | Mitigation Strategy                                                                       |
+| ------------------------------------------------------------------------- | ---------- | ------ | ----------------------------------------------------------------------------------------- |
+| Team member unavailability due to competing academic commitments          | Medium     | High   | Cross-train roles and keep shared documentation so any member can step in at short notice |
+| Unclear scope causing the project to drift beyond its original boundaries | High       | High   | Formalise a scope document in Meeting 2 and agree a change control process                |
+| Communication breakdown across the team                                   | Low        | Medium | Weekly Teams check-in; WhatsApp group for anything urgent                                 |
+| Ethics approval delays holding up the user testing phase                  | Medium     | High   | Submit the ethics form by Week 3 and build a buffer into the Gantt chart                  |
 
 ---
 
@@ -142,14 +142,14 @@ emphasised as non-negotiable from day one.
 
 ## Action Plan
 
-| Action Item | Owner | Deadline | Priority | Status |
-| --- | --- | --- | --- | --- |
-| Draft the Project Charter and scope document | Sijan Bhandari | 19 May 2026 | Critical | Open |
-| Set up the shared OneDrive repository with a clear folder structure | Abdullah Badhurdeen | 17 May 2026 | High | Open |
-| Draft the Ethics Application Form | Johns Jimee | 22 May 2026 | High | Open |
-| Begin researching game development frameworks for the literature review | Abdullah Badhurdeen | 5 June 2026 | High | Open |
-| Prepare a draft Gantt Chart and project timeline | Aditya Bhandari | 19 May 2026 | High | Open |
-| Circulate meeting minutes to all team members | Johns Jimee | 14 May 2026 | Medium | Open |
+| Action Item                                                             | Owner               | Deadline    | Priority | Status |
+| ----------------------------------------------------------------------- | ------------------- | ----------- | -------- | ------ |
+| Draft the Project Charter and scope document                            | Sijan Bhandari      | 19 May 2026 | Critical | Open   |
+| Set up the shared OneDrive repository with a clear folder structure     | Abdullah Badhurdeen | 17 May 2026 | High     | Open   |
+| Draft the Ethics Application Form                                       | Johns Jimee         | 22 May 2026 | High     | Open   |
+| Begin researching game development frameworks for the literature review | Abdullah Badhurdeen | 5 June 2026 | High     | Open   |
+| Prepare a draft Gantt Chart and project timeline                        | Aditya Bhandari     | 19 May 2026 | High     | Open   |
+| Circulate meeting minutes to all team members                           | Johns Jimee         | 14 May 2026 | Medium   | Open   |
 
 ---
 
@@ -172,11 +172,11 @@ before we can move forward. The Chair closed the meeting at 12:00.
 
 ---
 
-| Signatory | Name | Date |
-| --- | --- | --- |
+| Signatory   | Name           | Date        |
+| ----------- | -------------- | ----------- |
 | Chairperson | Sijan Bhandari | 12 May 2026 |
-| Secretary | Johns Jimee | 12 May 2026 |
+| Secretary   | Johns Jimee    | 12 May 2026 |
 
 **Next Meeting:** 13 May 2026
 
-*Document Version: v1.0 — Confidential*
+_Document Version: v1.0 — Confidential_

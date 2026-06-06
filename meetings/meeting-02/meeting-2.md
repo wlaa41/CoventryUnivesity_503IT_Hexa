@@ -1,17 +1,18 @@
 # Minutes of Meeting
+
 **Module:** 503IT — Communication and Collaboration
 **Project:** CyberQuiz Game Project
 
 ---
 
-| | |
-|---|---|
-| **Date** | Tuesday, 26 May 2026 |
-| **Time** | 11:00 AM |
-| **Meeting Type** | Team Progress & Task Assignment Meeting |
-| **Chaired By** | Sijan (Team Leader) |
-| **Minutes Taken By** | Sijan (Team Leader) |
-| **Members Present** | Nabin, Sijan, Jimmy, Abdul, Aditya, Sandesh |
+|                      |                                                 |
+| -------------------- | ----------------------------------------------- |
+| **Date**             | Tuesday, 26 May 2026                            |
+| **Time**             | 11:00 AM                                        |
+| **Meeting Type**     | Team Progress & Task Assignment Meeting         |
+| **Chaired By**       | Sijan (Team Leader)                             |
+| **Minutes Taken By** | Sijan (Team Leader)                             |
+| **Members Present**  | Nabin, Sijan, Jimmy, Abdhullah, Aditya, Sandesh |
 
 ---
 
@@ -19,14 +20,14 @@
 
 The following task assignments were confirmed for each team member:
 
-| Team Member | Assigned Role / Task |
-|---|---|
-| Nabin | User Experience (UX) Design |
-| Sijan | Maintaining quiz contents and assigning tasks to team members |
-| Jimmy | Reviewing tasks and quality checking |
-| Abdul | Member guides, Planner management, and coding |
-| Aditya | Generating ideas for sound and animation |
-| Sandesh | Improving and developing graphics |
+| Team Member | Assigned Role / Task                                          |
+| ----------- | ------------------------------------------------------------- |
+| Nabin       | User Experience (UX) Design                                   |
+| Sijan       | Maintaining quiz contents and assigning tasks to team members |
+| Jimmy       | Reviewing tasks and quality checking                          |
+| Abdul       | Member guides, Planner management, and coding                 |
+| Aditya      | Generating ideas for sound and animation                      |
+| Sandesh     | Improving and developing graphics                             |
 
 ---
 
@@ -56,5 +57,5 @@ The following deadlines and plans were agreed upon by the team:
 
 ---
 
-*Minutes approved by: **Sijan** | Team Leader | 503IT CyberQuiz Project*
-*Date: 26 May 2026*
+_Minutes approved by: **Sijan** | Team Leader | 503IT CyberQuiz Project_
+_Date: 26 May 2026_

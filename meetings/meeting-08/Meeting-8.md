@@ -14,7 +14,7 @@
 | ------------------- | ----------------------------------------------------------- |
 | Meeting Number      | Meeting 8                                                   |
 | Meeting Title       | Game Review Session and Improvement Planning                |
-| Date                | 30 June 2026                                                |
+| Date                | 04 June 2026                                                |
 | Time                | 10:00 – 12:00                                               |
 | Location            | University Classroom — Coventry University Dagenham, London |
 | Chairperson         | Sijan Bhandari                                              |
@@ -28,14 +28,14 @@
 
 ## Attendance Register
 
-| Name                 | Role / Designation              | Programme                    | Attendance |
-| -------------------- | ------------------------------- | ---------------------------- | ---------- |
-| Sijan Bhandari       | Project Lead / Chairperson      | BSc (Hons) Computing Science | Present    |
-| Johns Jimee          | Secretary / Lead Developer      | BSc (Hons) Computing Science | Present    |
-| Abdullah Badhurdeen  | Technical Analyst / QA Engineer | BSc (Hons) Computing Science | Present    |
-| Aditya Bhandari      | Systems Architect / Planner     | BSc (Hons) Computing Science | Present    |
-| Sandesh Shah         | Research Associate              | BSc (Hons) Computing Science | Present    |
-| Nabin Sunar          | Implementation Support          | BSc (Hons) Computing Science | Present    |
+| Name                | Role / Designation              | Programme                    | Attendance |
+| ------------------- | ------------------------------- | ---------------------------- | ---------- |
+| Sijan Bhandari      | Project Lead / Chairperson      | BSc (Hons) Computing Science | Present    |
+| Johns Jimee         | Secretary / Lead Developer      | BSc (Hons) Computing Science | Present    |
+| Abdullah Badhurdeen | Technical Analyst / QA Engineer | BSc (Hons) Computing Science | Present    |
+| Aditya Bhandari     | Systems Architect / Planner     | BSc (Hons) Computing Science | Present    |
+| Sandesh Shah        | Research Associate              | BSc (Hons) Computing Science | Present    |
+| Nabin Sunar         | Implementation Support          | BSc (Hons) Computing Science | Present    |
 
 _All six team members were present for the full duration of the session. No apologies were received._
 
@@ -70,6 +70,7 @@ The visual design of the game has been meaningfully refreshed. The background ar
 
 **Bug fixes:**
 Abdullah Badhurdeen summarised the two issues that were addressed since the last meeting:
+
 - A **performance issue** causing noticeable stuttering and frame drops on browsers other than Chrome — fixed by optimising the rendering loop and reducing unnecessary DOM repaints.
 - A **scoring logic error** that occasionally awarded incorrect points under specific conditions — corrected and tested across multiple game scenarios.
 
@@ -125,13 +126,13 @@ The decision to implement guest play before formal user evaluation is well-groun
 
 ## Risk Assessment
 
-| Risk Description                                                          | Likelihood | Impact | Mitigation Strategy                                                                |
-| ------------------------------------------------------------------------- | ---------- | ------ | ---------------------------------------------------------------------------------- |
-| Guest play implementation breaking existing login/session logic           | Medium     | High   | Develop on a separate feature branch; test login flow in parallel before merging   |
-| Anonymous session data lost if browser clears storage                     | Medium     | Medium | Inform users clearly that guest progress is not saved; set UI expectations upfront |
-| Guest play taking longer than estimated                                   | Medium     | High   | Start with Option 1 (simplest); defer Option 2 if time is tight                   |
-| Loading time on mobile affecting user evaluation quality                  | Low        | Medium | Investigate asset compression before Meeting 9; log for tracking                  |
-| End-of-game screen layout issue reappearing after fix                     | Low        | Low    | Regression test on narrow viewport after CSS fix; include in PR checklist          |
+| Risk Description                                                | Likelihood | Impact | Mitigation Strategy                                                                |
+| --------------------------------------------------------------- | ---------- | ------ | ---------------------------------------------------------------------------------- |
+| Guest play implementation breaking existing login/session logic | Medium     | High   | Develop on a separate feature branch; test login flow in parallel before merging   |
+| Anonymous session data lost if browser clears storage           | Medium     | Medium | Inform users clearly that guest progress is not saved; set UI expectations upfront |
+| Guest play taking longer than estimated                         | Medium     | High   | Start with Option 1 (simplest); defer Option 2 if time is tight                    |
+| Loading time on mobile affecting user evaluation quality        | Low        | Medium | Investigate asset compression before Meeting 9; log for tracking                   |
+| End-of-game screen layout issue reappearing after fix           | Low        | Low    | Regression test on narrow viewport after CSS fix; include in PR checklist          |
 
 ---
 
@@ -149,15 +150,15 @@ The decision to implement guest play before formal user evaluation is well-groun
 
 ## Action Plan
 
-| Action Item                                                              | Owner                | Deadline    | Priority | Status |
-| ------------------------------------------------------------------------ | -------------------- | ----------- | -------- | ------ |
-| Implement guest play — Option 1 (anonymous browser session)              | Johns Jimee          | 7 Jul 2026  | Critical | Open   |
-| Front-end integration and UI updates for guest play flow                 | Nabin Sunar          | 7 Jul 2026  | Critical | Open   |
-| Write ADR for guest play implementation decision                         | Aditya Bhandari      | 3 Jul 2026  | High     | Open   |
-| Fix CSS layout issue on end-of-game screen (narrow viewports)            | Abdullah Badhurdeen  | 2 Jul 2026  | Medium   | Open   |
-| Test login + guest session flows across 3 browsers                       | Abdullah Badhurdeen  | 7 Jul 2026  | High     | Open   |
-| Investigate asset loading time on mobile browsers                        | Sandesh Shah         | 7 Jul 2026  | Low      | Open   |
-| Circulate meeting minutes to all members                                 | Johns Jimee          | 1 Jul 2026  | Medium   | Open   |
+| Action Item                                                   | Owner               | Deadline   | Priority | Status |
+| ------------------------------------------------------------- | ------------------- | ---------- | -------- | ------ |
+| Implement guest play — Option 1 (anonymous browser session)   | Johns Jimee         | 7 Jul 2026 | Critical | Open   |
+| Front-end integration and UI updates for guest play flow      | Nabin Sunar         | 7 Jul 2026 | Critical | Open   |
+| Write ADR for guest play implementation decision              | Aditya Bhandari     | 3 Jul 2026 | High     | Open   |
+| Fix CSS layout issue on end-of-game screen (narrow viewports) | Abdullah Badhurdeen | 2 Jul 2026 | Medium   | Open   |
+| Test login + guest session flows across 3 browsers            | Abdullah Badhurdeen | 7 Jul 2026 | High     | Open   |
+| Investigate asset loading time on mobile browsers             | Sandesh Shah        | 7 Jul 2026 | Low      | Open   |
+| Circulate meeting minutes to all members                      | Johns Jimee         | 1 Jul 2026 | Medium   | Open   |
 
 ---
 

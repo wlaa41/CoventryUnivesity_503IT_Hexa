@@ -1,4 +1,4 @@
-# BUG-109 — No Background Music on Game Login Page
+# BUG-109 — Rendering Background Music on Game Login Page
 
 **Project:** Hexa Quiz (Cyber-Smart Gaming for Education)
 **Module:** 503IT — Communication and Collaboration

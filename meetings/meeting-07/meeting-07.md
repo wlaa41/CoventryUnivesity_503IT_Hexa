@@ -18,7 +18,7 @@
 | Time                | Not recorded                                                |
 | Location            | Microsoft Teams                                             |
 | Chairperson         | Sijan Bhandari                                              |
-| Minutes Prepared By | Aadarsh Bhandari                                            |
+| Minutes Prepared By | Aaditya Bhandari                                            |
 | Programme           | BSc Computing Science                                       |
 | Institution         | Coventry University Dagenham, London                        |
 | Module              | BSc Project / Dissertation                                  |

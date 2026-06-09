@@ -52,7 +52,7 @@ Workplace security, financial scams, password management, data protection, and s
 | Abdullah Bakhurdeen   | 15580319   | Technical Analyst / QA Engineer |
 | Nabin Sunar          | 15618449   | Implementation Support        |
 | Johns Jimee          | 15502001   | Secretary / Lead Developer     |
-| Sijan Bhandari       | 15597041   | SIJAN BHANDARI                |
+| Sijan Bhandari       | 15597041   |Project Lead / Chairperson      |
 
 ## Project Objectives
 

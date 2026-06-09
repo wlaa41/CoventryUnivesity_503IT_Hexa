@@ -70,3 +70,14 @@ Workplace security, financial scams, password management, data protection, and s
 ## License
 
 This project was developed for educational purposes.
+
+## Group Members - Hexa
+
+| # | GitHub Username | Profile |
+|---|---|---|
+| 1 | `Adlhx` | https://github.com/Adlhx |
+| 2 | `SANDESH-YT` | https://github.com/SANDESH-YT |
+| 3 | `Bhandari5` | https://github.com/Bhandari5 |
+| 4 | `jimeej-bit` | https://github.com/jimeej-bit |
+| 5 | `Aaditya597` | https://github.com/Aaditya597 |
+| 6 | `nabins12` | https://github.com/nabins12 |

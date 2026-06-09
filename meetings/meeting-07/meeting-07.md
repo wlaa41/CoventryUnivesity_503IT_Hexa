@@ -18,7 +18,7 @@
 | Time                | Not recorded                                                |
 | Location            | Microsoft Teams                                             |
 | Chairperson         | Sijan Bhandari                                              |
-| Minutes Prepared By | Aadarsh Bhandari                                            |
+| Minutes Prepared By | Aaditya Bhandari                                            |
 | Programme           | BSc Computing Science                                       |
 | Institution         | Coventry University Dagenham, London                        |
 | Module              | BSc Project / Dissertation                                  |
@@ -145,7 +145,7 @@ Overall, the meeting was useful because the team was able to identify the main i
 | Signatory   | Name             | Date       |
 | ----------- | ---------------- | ---------- |
 | Chairperson | Sijan Bhandari   | 3 Jun 2026 |
-| Secretary   | Aadarsh Bhandari | 3 Jun 2026 |
+| Secretary   | Aaditya Bhandari | 3 Jun 2026 |
 
 **Next Meeting:** To be confirmed
 

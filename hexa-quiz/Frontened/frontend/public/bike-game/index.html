@@ -1164,15 +1164,15 @@
         const noise = noiseBuffer.getChannelData(0);
         for(let i = 0; i < noise.length; i++) noise[i] = Math.random() * 2 - 1;
 
-        masterGain.gain.value = state.muted ? 0 : .13;
-        musicBus.gain.value = .72;
-        reverbInput.gain.value = .12;
-        reverbGain.gain.value = .2;
-        compressor.threshold.value = -18;
-        compressor.knee.value = 16;
-        compressor.ratio.value = 4;
-        compressor.attack.value = .008;
-        compressor.release.value = .24;
+        masterGain.gain.value = state.muted ? 0 : 1;
+        musicBus.gain.value = 1.32;
+        reverbInput.gain.value = .18;
+        reverbGain.gain.value = .3;
+        compressor.threshold.value = -10;
+        compressor.knee.value = 5;
+        compressor.ratio.value = 20;
+        compressor.attack.value = .002;
+        compressor.release.value = .15;
         convolver.buffer = createRideImpulse();
 
         musicBus.connect(masterGain);
@@ -1261,16 +1261,16 @@
         const semitone = identity.notes[step % identity.notes.length];
         const freq = identity.root * Math.pow(2, semitone / 12) * (state.phase === "bike" ? 1.12 : 1);
         const pan = Math.sin(step * .78) * .62;
-        tone(freq, state.phase === "bike" ? .16 : .34, identity.wave, .024, {
+        tone(freq, state.phase === "bike" ? .16 : .34, identity.wave, .045, {
           pan,
           filter:identity.filter
         });
         if(step % 4 === 0){
-          tone(identity.root / 2, .32, "sine", .035, { filter:680, reverb:false });
+          tone(identity.root / 2, .32, "sine", .062, { filter:680, reverb:false });
         }
         if(step % 8 === 0){
           identity.chord.forEach((note,index) => {
-            tone(identity.root * Math.pow(2, note / 12), 1.35, "sine", .008, {
+            tone(identity.root * Math.pow(2, note / 12), 1.35, "sine", .015, {
               attack:.2,
               detune:(index - 1) * 6,
               filter:identity.filter,
@@ -1279,7 +1279,7 @@
           });
         }
         if(state.phase === "bike" && step % 2 === 1){
-          noiseHit(.065, state.selectedMode === "hard" ? .018 : .012, 3800 + step % 4 * 700, -pan);
+          noiseHit(.065, state.selectedMode === "hard" ? .034 : .024, 3800 + step % 4 * 700, -pan);
         }
       }, pace);
     }
@@ -1292,7 +1292,7 @@
     function toggleSound(){
       initAudio();
       state.muted = !state.muted;
-      if(masterGain) masterGain.gain.setTargetAtTime(state.muted ? 0 : .13, audioCtx.currentTime, .04);
+      if(masterGain) masterGain.gain.setTargetAtTime(state.muted ? 0 : 1, audioCtx.currentTime, .04);
       ui.soundBtnHome.textContent = state.muted ? "Sound: OFF 🔇" : "Sound: ON 🔊";
       ui.soundBtnHud.textContent = state.muted ? "🔇" : "🔊";
       toast(state.muted ? "Sound muted 🔇" : "Sound enabled 🔊");

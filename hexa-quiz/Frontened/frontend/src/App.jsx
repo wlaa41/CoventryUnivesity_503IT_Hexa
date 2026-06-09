@@ -505,16 +505,16 @@ function useAdaptiveAudio(scene, topic, mode, enabled, volume) {
         noiseData[index] = Math.random() * 2 - 1;
       }
 
-      master.gain.value = enabled ? volume : 0.0001;
-      musicBus.gain.value = 1.08;
-      sfxBus.gain.value = 1;
-      reverbInput.gain.value = 0.18;
-      reverbGain.gain.value = 0.3;
-      compressor.threshold.value = -14;
-      compressor.knee.value = 10;
-      compressor.ratio.value = 10;
-      compressor.attack.value = 0.004;
-      compressor.release.value = 0.2;
+      master.gain.value = enabled ? volume * 1.22 : 0.0001;
+      musicBus.gain.value = 1.34;
+      sfxBus.gain.value = 1.28;
+      reverbInput.gain.value = 0.2;
+      reverbGain.gain.value = 0.34;
+      compressor.threshold.value = -11;
+      compressor.knee.value = 6;
+      compressor.ratio.value = 18;
+      compressor.attack.value = 0.002;
+      compressor.release.value = 0.16;
       convolver.buffer = createReverbImpulse(context);
 
       musicBus.connect(master);
@@ -549,7 +549,7 @@ function useAdaptiveAudio(scene, topic, mode, enabled, volume) {
     if (!engine) return;
 
     engine.master.gain.setTargetAtTime(
-      enabled ? volume : 0.0001,
+      enabled ? volume * 1.22 : 0.0001,
       engine.context.currentTime,
       0.08
     );

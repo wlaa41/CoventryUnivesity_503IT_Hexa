@@ -1126,15 +1126,61 @@
       toast._t = setTimeout(() => ui.toast.classList.remove("show"), 2300);
     }
 
-    // Audio: generated inside browser, no audio files needed.
-    let audioCtx, masterGain, musicInterval;
+    // Layered 48 kHz Web Audio soundtrack: offline-friendly and mode-adaptive.
+    let audioCtx, masterGain, musicBus, reverbInput, musicInterval, noiseBuffer;
+    let musicStep = 0;
+
+    function createRideImpulse(duration = 2.2, decay = 2.8){
+      const frames = Math.floor(audioCtx.sampleRate * duration);
+      const impulse = audioCtx.createBuffer(2, frames, audioCtx.sampleRate);
+      for(let channel = 0; channel < impulse.numberOfChannels; channel++){
+        const data = impulse.getChannelData(channel);
+        for(let i = 0; i < frames; i++){
+          data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / frames, decay);
+        }
+      }
+      return impulse;
+    }
+
     function initAudio(){
-      if(state.audioReady) return;
+      if(state.audioReady){
+        if(audioCtx?.state === "suspended") audioCtx.resume();
+        return;
+      }
       try{
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        try{
+          audioCtx = new AudioContext({ latencyHint:"interactive", sampleRate:48000 });
+        }catch{
+          audioCtx = new AudioContext();
+        }
         masterGain = audioCtx.createGain();
-        masterGain.gain.value = state.muted ? 0 : .16;
-        masterGain.connect(audioCtx.destination);
+        musicBus = audioCtx.createGain();
+        reverbInput = audioCtx.createGain();
+        const convolver = audioCtx.createConvolver();
+        const reverbGain = audioCtx.createGain();
+        const compressor = audioCtx.createDynamicsCompressor();
+        noiseBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 2, audioCtx.sampleRate);
+        const noise = noiseBuffer.getChannelData(0);
+        for(let i = 0; i < noise.length; i++) noise[i] = Math.random() * 2 - 1;
+
+        masterGain.gain.value = state.muted ? 0 : 1;
+        musicBus.gain.value = 1.32;
+        reverbInput.gain.value = .18;
+        reverbGain.gain.value = .3;
+        compressor.threshold.value = -10;
+        compressor.knee.value = 5;
+        compressor.ratio.value = 20;
+        compressor.attack.value = .002;
+        compressor.release.value = .15;
+        convolver.buffer = createRideImpulse();
+
+        musicBus.connect(masterGain);
+        reverbInput.connect(convolver);
+        convolver.connect(reverbGain);
+        reverbGain.connect(masterGain);
+        masterGain.connect(compressor);
+        compressor.connect(audioCtx.destination);
         state.audioReady = true;
         startMusic();
       }catch(e){
@@ -1142,34 +1188,100 @@
       }
     }
 
-    function tone(freq=440, duration=.12, type="sine", volume=.12){
+    function tone(freq=440, duration=.12, type="sine", volume=.12, options={}){
       if(!state.audioReady || state.muted) return;
       const osc = audioCtx.createOscillator();
+      const filter = audioCtx.createBiquadFilter();
       const gain = audioCtx.createGain();
+      const panner = audioCtx.createStereoPanner?.();
       osc.type = type;
       osc.frequency.value = freq;
-      gain.gain.value = volume;
-      osc.connect(gain);
-      gain.connect(masterGain);
+      osc.detune.value = options.detune || 0;
+      filter.type = options.filterType || "lowpass";
+      filter.frequency.value = options.filter || 5200;
+      filter.Q.value = options.resonance || .35;
+      osc.connect(filter);
+      filter.connect(gain);
+      if(panner){
+        panner.pan.value = options.pan || 0;
+        gain.connect(panner);
+        panner.connect(musicBus);
+        if(options.reverb !== false) panner.connect(reverbInput);
+      }else{
+        gain.connect(musicBus);
+        if(options.reverb !== false) gain.connect(reverbInput);
+      }
       const now = audioCtx.currentTime;
-      gain.gain.setValueAtTime(volume, now);
+      const attack = Math.min(options.attack || .018, duration * .35);
+      gain.gain.setValueAtTime(.0001, now);
+      gain.gain.exponentialRampToValueAtTime(Math.max(.0002, volume), now + attack);
       gain.gain.exponentialRampToValueAtTime(.001, now + duration);
       osc.start(now);
-      osc.stop(now + duration);
+      osc.stop(now + duration + .05);
+    }
+
+    function noiseHit(duration=.08, volume=.014, filterFrequency=3600, pan=0){
+      if(!state.audioReady || state.muted) return;
+      const source = audioCtx.createBufferSource();
+      const filter = audioCtx.createBiquadFilter();
+      const gain = audioCtx.createGain();
+      const panner = audioCtx.createStereoPanner?.();
+      source.buffer = noiseBuffer;
+      filter.type = "bandpass";
+      filter.frequency.value = filterFrequency;
+      filter.Q.value = 1.1;
+      gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(.001, audioCtx.currentTime + duration);
+      source.connect(filter);
+      filter.connect(gain);
+      if(panner){
+        panner.pan.value = pan;
+        gain.connect(panner);
+        panner.connect(musicBus);
+      }else{
+        gain.connect(musicBus);
+      }
+      source.start();
+      source.stop(audioCtx.currentTime + duration);
     }
 
     function startMusic(){
       stopMusic();
       if(!state.audioReady) return;
-      const notes = [220, 277, 330, 392, 330, 277, 247, 294];
-      let i = 0;
+      const identity = {
+        easy:{ root:220, notes:[0,4,7,12,9,7,4,2], chord:[0,4,7], wave:"triangle", filter:5200 },
+        medium:{ root:196, notes:[0,3,7,10,12,7,15,10], chord:[0,3,10], wave:"sawtooth", filter:3900 },
+        hard:{ root:164.81, notes:[0,1,7,6,10,7,13,12], chord:[0,1,7], wave:"square", filter:2700 }
+      }[state.selectedMode];
+      musicStep = 0;
+      const pace = state.phase === "bike" ? ({ easy:205, medium:180, hard:155 }[state.selectedMode]) : 360;
       musicInterval = setInterval(() => {
         if(state.muted || state.paused) return;
-        const freq = notes[i % notes.length] * (state.phase === "bike" ? 1.25 : 1);
-        tone(freq, .09, "triangle", .035);
-        if(i % 4 === 0) tone(freq / 2, .18, "sine", .025);
-        i++;
-      }, state.phase === "bike" ? 190 : 340);
+        const step = musicStep++;
+        const semitone = identity.notes[step % identity.notes.length];
+        const freq = identity.root * Math.pow(2, semitone / 12) * (state.phase === "bike" ? 1.12 : 1);
+        const pan = Math.sin(step * .78) * .62;
+        tone(freq, state.phase === "bike" ? .16 : .34, identity.wave, .045, {
+          pan,
+          filter:identity.filter
+        });
+        if(step % 4 === 0){
+          tone(identity.root / 2, .32, "sine", .062, { filter:680, reverb:false });
+        }
+        if(step % 8 === 0){
+          identity.chord.forEach((note,index) => {
+            tone(identity.root * Math.pow(2, note / 12), 1.35, "sine", .015, {
+              attack:.2,
+              detune:(index - 1) * 6,
+              filter:identity.filter,
+              pan:(index - 1) * .42
+            });
+          });
+        }
+        if(state.phase === "bike" && step % 2 === 1){
+          noiseHit(.065, state.selectedMode === "hard" ? .034 : .024, 3800 + step % 4 * 700, -pan);
+        }
+      }, pace);
     }
 
     function stopMusic(){
@@ -1180,7 +1292,7 @@
     function toggleSound(){
       initAudio();
       state.muted = !state.muted;
-      if(masterGain) masterGain.gain.value = state.muted ? 0 : .16;
+      if(masterGain) masterGain.gain.setTargetAtTime(state.muted ? 0 : 1, audioCtx.currentTime, .04);
       ui.soundBtnHome.textContent = state.muted ? "Sound: OFF 🔇" : "Sound: ON 🔊";
       ui.soundBtnHud.textContent = state.muted ? "🔇" : "🔊";
       toast(state.muted ? "Sound muted 🔇" : "Sound enabled 🔊");

@@ -2793,6 +2793,43 @@ h3 {
   letter-spacing: 0.12em;
 }
 
+.guest-entry {
+  display: grid;
+  gap: 9px;
+  margin-top: 18px;
+  padding-top: 17px;
+  border-top: 1px solid rgba(126, 222, 245, 0.18);
+}
+
+.guest-entry > span {
+  color: rgba(174, 228, 237, 0.7);
+  font-family: "Barlow Condensed", Arial, sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-align: center;
+}
+
+.guest-entry .guest-btn {
+  margin-top: 0;
+  border-color: rgba(255, 177, 88, 0.48);
+  border-radius: 12px;
+  color: #fff1d7;
+  background:
+    linear-gradient(135deg, rgba(255, 136, 35, 0.18), rgba(42, 198, 238, 0.12)),
+    rgba(4, 20, 36, 0.82);
+  box-shadow: 0 0 24px rgba(255, 134, 34, 0.08);
+}
+
+.guest-entry .guest-btn:hover {
+  border-color: rgba(255, 196, 117, 0.82);
+  color: #fff;
+  background:
+    linear-gradient(135deg, rgba(255, 136, 35, 0.28), rgba(42, 198, 238, 0.2)),
+    rgba(4, 20, 36, 0.9);
+  box-shadow: 0 0 30px rgba(255, 134, 34, 0.16);
+}
+
 .resume-btn {
   border-color: rgba(111, 241, 176, 0.34);
   color: #bcfada;

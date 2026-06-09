@@ -356,7 +356,23 @@ function stopSpeaking() {
   window.speechSynthesis?.cancel();
 }
 
-function useAdaptiveAudio(scene, topic, enabled, volume) {
+function createReverbImpulse(context, duration = 2.8, decay = 2.7) {
+  const frameCount = Math.floor(context.sampleRate * duration);
+  const impulse = context.createBuffer(2, frameCount, context.sampleRate);
+
+  for (let channel = 0; channel < impulse.numberOfChannels; channel++) {
+    const data = impulse.getChannelData(channel);
+
+    for (let index = 0; index < frameCount; index++) {
+      const envelope = (1 - index / frameCount) ** decay;
+      data[index] = (Math.random() * 2 - 1) * envelope;
+    }
+  }
+
+  return impulse;
+}
+
+function useAdaptiveAudio(scene, topic, mode, enabled, volume) {
   const engineRef = useRef(null);
   const intervalRef = useRef(null);
   const stepRef = useRef(0);
@@ -368,24 +384,77 @@ function useAdaptiveAudio(scene, topic, enabled, volume) {
     intervalRef.current = null;
   }, []);
 
-  const createTone = useCallback((frequency, duration, gainValue, type = "sine") => {
+  const createTone = useCallback((frequency, duration, gainValue, type = "sine", options = {}) => {
     const engine = engineRef.current;
 
     if (!engine || engine.context.state !== "running") return;
 
     const oscillator = engine.context.createOscillator();
+    const filter = engine.context.createBiquadFilter();
     const gain = engine.context.createGain();
+    const panner = engine.context.createStereoPanner?.();
     const now = engine.context.currentTime;
+    const attack = Math.min(options.attack ?? 0.035, duration * 0.35);
+    const releaseStart = Math.max(now + attack + 0.01, now + duration - (options.release ?? 0.16));
 
     oscillator.type = type;
     oscillator.frequency.setValueAtTime(frequency, now);
+    oscillator.detune.value = options.detune ?? 0;
+    filter.type = options.filterType || "lowpass";
+    filter.frequency.value = options.filter ?? 5200;
+    filter.Q.value = options.resonance ?? 0.35;
     gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(gainValue, now + 0.025);
+    gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, gainValue), now + attack);
+    gain.gain.setValueAtTime(Math.max(0.0002, gainValue * 0.82), releaseStart);
     gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-    oscillator.connect(gain);
-    gain.connect(engine.master);
+
+    oscillator.connect(filter);
+    filter.connect(gain);
+
+    if (panner) {
+      panner.pan.value = options.pan ?? 0;
+      gain.connect(panner);
+      panner.connect(options.sfx ? engine.sfxBus : engine.musicBus);
+      if ((options.reverb ?? 0.2) > 0) panner.connect(engine.reverbInput);
+    } else {
+      gain.connect(options.sfx ? engine.sfxBus : engine.musicBus);
+      if ((options.reverb ?? 0.2) > 0) gain.connect(engine.reverbInput);
+    }
+
     oscillator.start(now);
-    oscillator.stop(now + duration + 0.04);
+    oscillator.stop(now + duration + 0.08);
+  }, []);
+
+  const createNoise = useCallback((duration, gainValue, options = {}) => {
+    const engine = engineRef.current;
+
+    if (!engine || engine.context.state !== "running") return;
+
+    const source = engine.context.createBufferSource();
+    const filter = engine.context.createBiquadFilter();
+    const gain = engine.context.createGain();
+    const panner = engine.context.createStereoPanner?.();
+    const now = engine.context.currentTime;
+
+    source.buffer = engine.noiseBuffer;
+    filter.type = options.filterType || "bandpass";
+    filter.frequency.value = options.filter ?? 1400;
+    filter.Q.value = options.resonance ?? 0.8;
+    gain.gain.setValueAtTime(Math.max(0.0002, gainValue), now);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+    source.connect(filter);
+    filter.connect(gain);
+
+    if (panner) {
+      panner.pan.value = options.pan ?? 0;
+      gain.connect(panner);
+      panner.connect(options.sfx ? engine.sfxBus : engine.musicBus);
+    } else {
+      gain.connect(options.sfx ? engine.sfxBus : engine.musicBus);
+    }
+
+    source.start(now);
+    source.stop(now + duration);
   }, []);
 
   const playSfx = useCallback(
@@ -393,18 +462,19 @@ function useAdaptiveAudio(scene, topic, enabled, volume) {
       if (!engineRef.current || !enabled) return;
 
       if (kind === "correct") {
-        createTone(523.25, 0.18, 0.13, "triangle");
-        setTimeout(() => createTone(783.99, 0.28, 0.11, "triangle"), 120);
+        createTone(523.25, 0.2, 0.13, "triangle", { sfx: true, pan: -0.18, filter: 7600 });
+        setTimeout(() => createTone(783.99, 0.34, 0.11, "triangle", { sfx: true, pan: 0.18, filter: 8200 }), 120);
       } else if (kind === "wrong") {
-        createTone(196, 0.22, 0.11, "sawtooth");
-        setTimeout(() => createTone(146.83, 0.3, 0.09, "sawtooth"), 120);
+        createTone(196, 0.22, 0.1, "sawtooth", { sfx: true, filter: 1300 });
+        setTimeout(() => createTone(146.83, 0.32, 0.08, "sawtooth", { sfx: true, filter: 900 }), 120);
       } else if (kind === "collect") {
-        createTone(880, 0.1, 0.07, "square");
+        createTone(880, 0.12, 0.07, "square", { sfx: true, pan: 0.25, filter: 9000 });
       } else if (kind === "impact") {
-        createTone(92.5, 0.25, 0.12, "sawtooth");
+        createTone(92.5, 0.28, 0.12, "sawtooth", { sfx: true, filter: 500 });
+        createNoise(0.18, 0.08, { sfx: true, filter: 420, resonance: 1.4 });
       }
     },
-    [createTone, enabled]
+    [createNoise, createTone, enabled]
   );
 
   const primeAudio = useCallback(async () => {
@@ -413,11 +483,55 @@ function useAdaptiveAudio(scene, topic, enabled, volume) {
 
       if (!AudioContext) return;
 
-      const context = new AudioContext();
+      let context;
+
+      try {
+        context = new AudioContext({ latencyHint: "interactive", sampleRate: 48000 });
+      } catch {
+        context = new AudioContext();
+      }
+
       const master = context.createGain();
-      master.gain.value = volume;
-      master.connect(context.destination);
-      engineRef.current = { context, master };
+      const musicBus = context.createGain();
+      const sfxBus = context.createGain();
+      const compressor = context.createDynamicsCompressor();
+      const reverbInput = context.createGain();
+      const convolver = context.createConvolver();
+      const reverbGain = context.createGain();
+      const noiseBuffer = context.createBuffer(1, context.sampleRate * 2, context.sampleRate);
+      const noiseData = noiseBuffer.getChannelData(0);
+
+      for (let index = 0; index < noiseData.length; index++) {
+        noiseData[index] = Math.random() * 2 - 1;
+      }
+
+      master.gain.value = enabled ? volume : 0.0001;
+      musicBus.gain.value = 1.08;
+      sfxBus.gain.value = 1;
+      reverbInput.gain.value = 0.18;
+      reverbGain.gain.value = 0.3;
+      compressor.threshold.value = -14;
+      compressor.knee.value = 10;
+      compressor.ratio.value = 10;
+      compressor.attack.value = 0.004;
+      compressor.release.value = 0.2;
+      convolver.buffer = createReverbImpulse(context);
+
+      musicBus.connect(master);
+      sfxBus.connect(master);
+      reverbInput.connect(convolver);
+      convolver.connect(reverbGain);
+      reverbGain.connect(master);
+      master.connect(compressor);
+      compressor.connect(context.destination);
+      engineRef.current = {
+        context,
+        master,
+        musicBus,
+        sfxBus,
+        reverbInput,
+        noiseBuffer
+      };
     }
 
     if (engineRef.current.context.state === "suspended") {
@@ -428,7 +542,7 @@ function useAdaptiveAudio(scene, topic, enabled, volume) {
       startedRef.current = true;
       setAudioRevision((current) => current + 1);
     }
-  }, [volume]);
+  }, [enabled, volume]);
 
   useEffect(() => {
     const engine = engineRef.current;
@@ -457,28 +571,87 @@ function useAdaptiveAudio(scene, topic, enabled, volume) {
       general: 2
     }[topic] ?? 2;
 
+    const modeIdentity = {
+      kids: { shift: 0, wave: "triangle", warmth: 4600, pan: 0.42 },
+      teens: { shift: 3, wave: "sawtooth", warmth: 3400, pan: 0.7 },
+      adults: { shift: -2, wave: "sine", warmth: 2600, pan: 0.3 }
+    }[mode] || { shift: 0, wave: "triangle", warmth: 3900, pan: 0.5 };
+
     const config = {
-      intro: { root: 110, pattern: [0, 7, 12, 7], pace: 420, wave: "sine" },
-      portal: { root: 130.81, pattern: [0, 3, 7, 10], pace: 360, wave: "triangle" },
-      home: { root: 146.83, pattern: [0, 7, 10, 12, 10, 7], pace: 330, wave: "triangle" },
-      dashboard: { root: 164.81, pattern: [0, 4, 7, 11], pace: 420, wave: "sine" },
-      quiz: { root: 138.59, pattern: [0, 7, 3, 10, 5, 12], pace: 300, wave: "triangle" },
-      runner: { root: 174.61, pattern: [0, 12, 7, 15, 10, 7, 12, 17], pace: 170, wave: "square" },
-      result: { root: 196, pattern: [0, 4, 7, 12, 7, 4], pace: 380, wave: "triangle" }
-    }[scene] || { root: 130.81, pattern: [0, 7, 12, 7], pace: 400, wave: "sine" };
+      intro: { root: 110, pattern: [0, 7, 12, 7], chord: [0, 7, 12], pace: 520, energy: 0.34, level: 1 },
+      portal: { root: 130.81, pattern: [0, 3, 7, 10, 12, 10, 7, 3], chord: [0, 3, 7, 10], pace: 330, energy: 0.74, level: 1.85, sparkle: true },
+      home: { root: 146.83, pattern: [0, 7, 10, 12, 14, 12, 10, 7], chord: [0, 7, 10, 14], pace: 300, energy: 0.82, level: 2, sparkle: true },
+      modes: { root: 155.56, pattern: [0, 5, 7, 12, 10, 7], chord: [0, 5, 10], pace: 330, energy: 0.62, level: 1.2 },
+      dashboard: { root: 164.81, pattern: [0, 4, 7, 11], chord: [0, 4, 11], pace: 430, energy: 0.44, level: 1 },
+      quiz: { root: 138.59, pattern: [0, 7, 3, 10, 5, 12], chord: [0, 3, 7], pace: 300, energy: 0.66, level: 1.1 },
+      runner: { root: 174.61, pattern: [0, 12, 7, 15, 10, 7, 12, 17], chord: [0, 7, 12], pace: 175, energy: 1, level: 1.2 },
+      result: { root: 196, pattern: [0, 4, 7, 12, 7, 4], chord: [0, 4, 7], pace: 390, energy: 0.52, level: 1.1 }
+    }[scene] || { root: 130.81, pattern: [0, 7, 12, 7], chord: [0, 7, 12], pace: 400, energy: 0.5, level: 1 };
 
     stepRef.current = 0;
 
     function pulse() {
       const step = stepRef.current++;
       const semitone = config.pattern[step % config.pattern.length];
-      const adjustedShift = scene === "quiz" ? topicShift : 0;
+      const adjustedShift = (scene === "quiz" ? topicShift : 0) + modeIdentity.shift;
       const frequency = config.root * 2 ** ((semitone + adjustedShift) / 12);
+      const pan = Math.sin(step * 0.82) * modeIdentity.pan;
 
-      createTone(frequency, scene === "runner" ? 0.17 : 0.46, 0.032, config.wave);
+      createTone(
+        frequency,
+        scene === "runner" ? 0.19 : 0.52,
+        (0.022 + config.energy * 0.012) * config.level,
+        modeIdentity.wave,
+        { pan, filter: modeIdentity.warmth + config.energy * 1800, reverb: 0.24 }
+      );
 
       if (step % 4 === 0) {
-        createTone(config.root / 2, scene === "runner" ? 0.13 : 0.32, 0.04, "sine");
+        createTone(config.root / 2, scene === "runner" ? 0.24 : 0.46, (0.032 + config.energy * 0.012) * config.level, "sine", {
+          filter: 740,
+          release: 0.2,
+          reverb: 0.08
+        });
+      }
+
+      if (step % 8 === 0) {
+        config.chord.forEach((note, index) => {
+          const chordFrequency = config.root * 2 ** ((note + modeIdentity.shift) / 12);
+          createTone(chordFrequency, scene === "runner" ? 1.1 : 2.35, 0.0075 * config.level, "sine", {
+            attack: 0.28,
+            release: 0.7,
+            detune: (index - (config.chord.length - 1) / 2) * 5,
+            filter: modeIdentity.warmth,
+            pan: (index - (config.chord.length - 1) / 2) * 0.38,
+            reverb: 0.4
+          });
+        });
+      }
+
+      if (config.sparkle && step % 2 === 1) {
+        createTone(frequency * 2, 0.2, 0.012 * config.level, "sine", {
+          attack: 0.012,
+          release: 0.12,
+          filter: 9800,
+          pan: -pan,
+          reverb: 0.38
+        });
+      }
+
+      if (config.sparkle && step % 4 === 0) {
+        createTone(config.root / 4, 0.7, 0.032 * config.level, "triangle", {
+          filter: 420,
+          release: 0.35,
+          pan: 0,
+          reverb: 0.04
+        });
+      }
+
+      if (config.energy > 0.58 && step % (scene === "runner" ? 2 : 4) === 2) {
+        createNoise(scene === "runner" ? 0.08 : 0.12, (0.009 + config.energy * 0.007) * config.level, {
+          filter: scene === "runner" ? 4200 : 2600,
+          resonance: 1.1,
+          pan: -pan * 0.6
+        });
       }
     }
 
@@ -486,7 +659,7 @@ function useAdaptiveAudio(scene, topic, enabled, volume) {
     intervalRef.current = setInterval(pulse, config.pace);
 
     return stopMusic;
-  }, [audioRevision, createTone, enabled, scene, stopMusic, topic]);
+  }, [audioRevision, createNoise, createTone, enabled, mode, scene, stopMusic, topic]);
 
   useEffect(
     () => () => {
@@ -614,7 +787,7 @@ function AudioDock({
         <input
           type="range"
           min="0"
-          max="0.5"
+          max="1"
           step="0.01"
           value={volume}
           onChange={(event) => setVolume(Number(event.target.value))}
@@ -700,7 +873,7 @@ function IntroScreen({ loading, error }) {
           {error || (loading ? "Loading verified scenarios..." : "Secure link established")}
         </p>
         <div className="intro-loader"><span></span></div>
-        <small>Audio unlocks after your first tap.</small>
+        <small>Tap anywhere to unlock the UHD adaptive soundtrack.</small>
       </section>
     </main>
   );
@@ -717,6 +890,7 @@ function PortalScreen({
   onVerifyOtp,
   onResendOtp,
   onChangeEmail,
+  onGuestLogin,
   controls
 }) {
   return (
@@ -727,23 +901,23 @@ function PortalScreen({
 
       <section className="portal-layout">
         <div className="portal-copy">
-          <p className="eyebrow">GMAIL OTP PROTECTED TERMINAL</p>
-          <h1>Verify to enter.</h1>
+          <p className="eyebrow">SECURE PLAYER TERMINAL</p>
+          <h1>Choose your entry.</h1>
           <p>
-            The HEXA game home page is locked until a real 6-digit verification
-            code is sent to your Gmail and entered correctly.
+            Verify your email for a named profile, or jump straight into the
+            cyber range as a guest.
           </p>
           <div className="terminal-lines">
             <span><i></i> EMAILJS SERVICE CONNECTED</span>
-            <span><i></i> 6-DIGIT GMAIL CODE REQUIRED</span>
-            <span><i></i> GAME ACCESS BLOCKED UNTIL VERIFIED</span>
+            <span><i></i> 6-DIGIT SECURE LOGIN AVAILABLE</span>
+            <span><i></i> GUEST TRAINING ACCESS READY</span>
           </div>
         </div>
 
         <section className="terminal-card panel-3d">
           <div className="terminal-bar">
-            <span>HEXA_GMAIL_OTP</span>
-            <span>EMAIL VERIFICATION ONLY</span>
+            <span>HEXA_ACCESS_GATE</span>
+            <span>SECURE OR GUEST ACCESS</span>
           </div>
 
           <div className="otp-stepper" aria-label="Verification progress">
@@ -824,9 +998,16 @@ function PortalScreen({
             </form>
           )}
 
+          <div className="guest-entry">
+            <span>OR ENTER WITHOUT EMAIL</span>
+            <button className="guest-btn" type="button" onClick={onGuestLogin}>
+              CONTINUE AS GUEST
+            </button>
+          </div>
+
           <small>
-            No passcode login, no guest access, and no demo OTP fallback is used. The home
-            page opens only after the Gmail verification code is correct.
+            Guest progress is stored locally on this device. Email verification creates
+            a named player profile.
           </small>
         </section>
       </section>
@@ -1391,7 +1572,7 @@ function App() {
   const [screen, setScreen] = useState("intro");
   const [theme, setTheme] = useState(() => localStorage.getItem("hexa_theme") || "dark");
   const [musicOn, setMusicOn] = useState(true);
-  const [volume, setVolume] = useState(0.16);
+  const [volume, setVolume] = useState(1);
   const [voiceOn, setVoiceOn] = useState(true);
   const [narrationVoice, setNarrationVoice] = useState(null);
   const [instructionsOpen, setInstructionsOpen] = useState(false);
@@ -1425,7 +1606,13 @@ function App() {
   }, [questionIndex, questions, selectedLevel]);
 
   const musicScene = screen === "quiz" ? "quiz" : screen;
-  const { primeAudio, playSfx } = useAdaptiveAudio(musicScene, currentTopic, musicOn, volume);
+  const { primeAudio, playSfx } = useAdaptiveAudio(
+    musicScene,
+    currentTopic,
+    selectedLevel,
+    musicOn,
+    volume
+  );
 
   const controls = {
     musicOn,
@@ -1661,6 +1848,19 @@ function App() {
     setScreen("home");
   }
 
+  function handleGuestLogin() {
+    setAuthError("");
+    setOtpStatus("");
+    setOtpRequest(null);
+    setProfile({
+      name: "Guest Player",
+      email: "guest@hexa.local",
+      isGuest: true,
+      verifiedAt: null
+    });
+    setScreen("home");
+  }
+
   function logout() {
     stopSpeaking();
     setProfile(null);
@@ -1792,6 +1992,7 @@ function App() {
           onVerifyOtp={handleVerifyOtp}
           onResendOtp={handleResendOtp}
           onChangeEmail={handleChangeEmail}
+          onGuestLogin={handleGuestLogin}
           controls={controls}
         />
       )}

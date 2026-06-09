@@ -145,7 +145,7 @@ Overall, the meeting was useful because the team was able to identify the main i
 | Signatory   | Name             | Date       |
 | ----------- | ---------------- | ---------- |
 | Chairperson | Sijan Bhandari   | 3 Jun 2026 |
-| Secretary   | Aadarsh Bhandari | 3 Jun 2026 |
+| Secretary   | Aaditya Bhandari | 3 Jun 2026 |
 
 **Next Meeting:** To be confirmed
 

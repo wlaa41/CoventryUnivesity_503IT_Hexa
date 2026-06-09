@@ -43,14 +43,16 @@ Workplace security, financial scams, password management, data protection, and s
 
 ## Team Members
 
-| Name | Student ID |
-|--------|------------|
-| Aaditya Bhandari | 15606963 |
-| Sandesh Jung Shah | 15626710 |
-| Abdullah Bakhurdeen | 15580319 |
-| Nabin Sunar | 15618449 |
-| Johns Jimee | 15502001 |
-| Sijan Bhandari | 15597041 | 
+## Team Members
+
+| Name | Student ID | Role | GitHub |
+|------|------------|------|--------|
+| Aaditya Bhandari | 15606963 | Systems Architect / Planner | [@Aaditya597](https://github.com/Aaditya597) |
+| Sandesh Jung Shah | 15626710 | Research Associate | [@SANDESH-YT](https://github.com/SANDESH-YT) |
+| Abdullah Bakhurdeen | 15580319 | Technical Analyst / QA Engineer | [@Adlhx](https://github.com/Adlhx) |
+| Nabin Sunar | 15618449 | Implementation Support | [@nabins12](https://github.com/nabins12) |
+| Johns Jimee | 15502001 | Secretary / Lead Developer | [@jimeej-bit](https://github.com/jimeej-bit) |
+| Sijan Bhandari | 15597041 | Project Lead / Chairperson | [@Bhandari5](https://github.com/Bhandari5) |
 
 ## Project Objectives
 

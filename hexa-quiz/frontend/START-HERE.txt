@@ -1,0 +1,18 @@
+HEXA GAME - START HERE
+
+Option 1: Run the editable project
+1. Open PowerShell or Command Prompt in the frontend folder.
+2. Run: npm install
+3. Run: npm run dev
+4. Open the localhost address shown in the terminal.
+
+Option 2: Preview the included production build
+1. Open PowerShell or Command Prompt in the frontend folder.
+2. Run: npm install
+3. Run: npm run preview
+4. Open the localhost address shown in the terminal.
+
+Important:
+- Browsers require one click or tap before background audio can begin.
+- Keep the full folder structure together. Do not open dist/index.html directly.
+- Guest login works without email.

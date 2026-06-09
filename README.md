@@ -43,14 +43,16 @@ Workplace security, financial scams, password management, data protection, and s
 
 ## Team Members
 
-| Name | Student ID |
-|--------|------------|
-| Aaditya Bhandari | 15606963 |
-| Sandesh Jung Shah | 15626710 |
-| Abdullah Bakhurdeen | 15580319 |
-| Nabin Sunar | 15618449 |
-| Johns Jimee | 15502001 |
-| Sijan Bhandari | 15597041 | 
+## Team Members
+
+| Name                  | Student ID | Role                          |
+|----------------------|------------|-------------------------------|
+| Aaditya Bhandari     | 15606963   | Systems Architect / Planner   |
+| Sandesh Jung Shah     | 15626710   | Research Associate            |
+| Abdullah Bakhurdeen   | 15580319   | Technical Analyst / QA Engineer |
+| Nabin Sunar          | 15618449   | Implementation Support        |
+| Johns Jimee          | 15502001   | Secretary / Lead Developer     |
+| Sijan Bhandari       | 15597041   |Project Lead / Chairperson      |
 
 ## Project Objectives
 

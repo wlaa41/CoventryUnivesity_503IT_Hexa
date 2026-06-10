@@ -31,7 +31,7 @@
 | Name                | Role / Designation              | Programme                    | Attendance |
 | ------------------- | ------------------------------- | ---------------------------- | ---------- |
 | Sijan Bhandari      | Project Lead / Chairperson      | BSc (Hons) Computing Science | Present    |
-| Johns Jimee         | Secretary / Lead Developer      | BSc (Hons) Computing Science | Present    |
+| Johns Jimee         | Secretary / Technical Analyst   | BSc (Hons) Computing Science | Present    |
 | Abdhullah Badhurdeen| QA Lead / Demo Manager          | BSc (Hons) Computing Science | Present    |
 | Aditya Bhandari     | Documentation Lead / Planner    | BSc (Hons) Computing Science | Present    |
 | Sandesh Shah        | Research Associate              | BSc (Hons) Computing Science | Present    |
@@ -125,8 +125,8 @@ Sijan Bhandari acknowledged each member's contribution formally before closing t
 | Name                | Key Contributions                                                                                       |
 | ------------------- | ------------------------------------------------------------------------------------------------------- |
 | Sijan Bhandari      | Project leadership, scope management, quiz content curation, answer wording review, overall quality oversight |
-| Johns Jimee         | Lead development, guest play feature, leaderboard, timer toggle, ARIA enhancements, codebase documentation |
-| Abdhullah Badhurdeen| QA engineering, bug resolution, accessibility audit, integration testing, demo preparation and contingency |
+| Johns Jimee         | Technical analysis, guest play feature, leaderboard, timer toggle, ARIA enhancements, codebase documentation |
+| Abdhullah Badhurdeen| Lead development, QA engineering, bug resolution, accessibility audit, integration testing, demo preparation and contingency |
 | Aditya Bhandari     | Systems architecture, ADR authoring, sprint retrospectives, evaluation report, presentation structure and delivery |
 | Sandesh Shah        | Research, graphic assets, image optimisation, SUS data collection, evaluation report co-author          |
 | Nabin Sunar         | UX design, front-end integration, mode selection prompt, presentation coordination, meeting minutes     |

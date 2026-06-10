@@ -31,8 +31,8 @@
 | Name                 | Role / Designation              | Programme             | Attendance |
 | -------------------- | ------------------------------- | --------------------- | ---------- |
 | Sijan Bhandari       | Project Lead / Chairperson      | BSc Computing Science | Present    |
-| Johns Jimee          | Secretary / Lead Developer      | BSc Computing Science | Present    |
-| Abdhullah Badhurdeen | Technical Analyst / QA Engineer | BSc Computing Science | Present    |
+| Johns Jimee          | Secretary / Technical Analyst   | BSc Computing Science | Present    |
+| Abdhullah Badhurdeen | Lead Developer / QA Engineer    | BSc Computing Science | Present    |
 | Aditya Bhandari      | Systems Architect / Planner     | BSc Computing Science | Present    |
 | Sandesh Shah         | Research Associate              | BSc Computing Science | Present    |
 | Nabin Sunar          | Implementation Support          | BSc Computing Science | Present    |
@@ -75,8 +75,8 @@ seriousness it deserves.
 
 Roles were agreed and formally assigned: Sijan Bhandari stepped up as Project
 Lead and Chairperson; Johns Jimee took on the dual responsibility of Secretary
-and Lead Developer, overseeing documentation and technical reporting; Abdullah
-Badhurdeen became our Technical Analyst and QA Engineer, responsible for
+and Technical Analyst, overseeing documentation and technical reporting; Abdullah
+Badhurdeen became our Lead Developer and QA Engineer, responsible for
 testing and defect management; Aditya Bhandari took the Systems Architect role,
 handling design, planning, and resource coordination. Sandesh Shah and Nabin
 Sunar joined as Project Associates and were fully brought on board from this

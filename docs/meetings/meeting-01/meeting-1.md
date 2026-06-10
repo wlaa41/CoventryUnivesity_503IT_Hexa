@@ -74,10 +74,10 @@ seriousness it deserves.
 ### 1.2 Team Roles and Governance Structure
 
 Roles were agreed and formally assigned: Sijan Bhandari stepped up as Project
-Lead and Chairperson; Johns Jimee took on the dual responsibility of Secretary
-and Technical Analyst, overseeing documentation and technical reporting; Abdullah
-Badhurdeen became our Lead Developer and QA Engineer, responsible for
-testing and defect management; Aditya Bhandari took the Systems Architect role,
+Lead and Chairperson; Johns Jimee took on the responsibility of Secretary,
+Technical Analyst, and QA Engineer, overseeing documentation, technical
+reporting, testing and defect management; Abdullah Badhurdeen became our Lead
+Developer, responsible for leading the technical build and implementation; Aditya Bhandari took the Systems Architect role,
 handling design, planning, and resource coordination. Sandesh Shah and Nabin
 Sunar joined as Project Associates and were fully brought on board from this
 meeting onwards, with all documentation shared with them immediately.

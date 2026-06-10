@@ -31,7 +31,7 @@
 | Name                | Role / Designation              | Programme                    | Attendance |
 | ------------------- | ------------------------------- | ---------------------------- | ---------- |
 | Sijan Bhandari      | Project Lead                    | BSc (Hons) Computing Science | Present    |
-| Johns Jimee         | Secretary / Technical Analyst   | BSc (Hons) Computing Science | Present    |
+| Johns Jimee         | Secretary / Technical Analyst / QA Engineer | BSc (Hons) Computing Science | Present    |
 | Abdhullah Badhurdeen| Minutes Recorder / QA Lead      | BSc (Hons) Computing Science | Present    |
 | Aditya Bhandari     | Chairperson / Systems Architect | BSc (Hons) Computing Science | Present    |
 | Sandesh Shah        | Research Associate              | BSc (Hons) Computing Science | Present    |

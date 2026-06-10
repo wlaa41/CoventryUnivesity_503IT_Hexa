@@ -31,8 +31,8 @@
 | Name                | Role / Designation              | Programme                    | Attendance |
 | ------------------- | ------------------------------- | ---------------------------- | ---------- |
 | Sijan Bhandari      | Project Lead / Chairperson      | BSc (Hons) Computing Science | Present    |
-| Johns Jimee         | Secretary / Lead Developer      | BSc (Hons) Computing Science | Present    |
-| Abdhullah Badhurdeen| QA Lead / Demo Manager          | BSc (Hons) Computing Science | Present    |
+| Johns Jimee         | Secretary / Technical Analyst / QA Engineer | BSc (Hons) Computing Science | Present    |
+| Abdhullah Badhurdeen| Lead Developer                  | BSc (Hons) Computing Science | Present    |
 | Aditya Bhandari     | Documentation Lead / Planner    | BSc (Hons) Computing Science | Present    |
 | Sandesh Shah        | Research Associate              | BSc (Hons) Computing Science | Present    |
 | Nabin Sunar         | Implementation Support          | BSc (Hons) Computing Science | Present    |
@@ -100,7 +100,7 @@ Sijan Bhandari facilitated a structured retrospective with contributions from al
 
 - **Communication** — the combination of Microsoft Teams for formal meetings and WhatsApp for day-to-day coordination worked well throughout. Issues were raised quickly and never left unaddressed.
 - **Task management in Microsoft Planner** — switching from Trello to Planner in Meeting 2 proved to be the right decision. The platform gave everyone clear visibility of ownership and status at all times.
-- **Abdhullah Badhurdeen's QA leadership** — the systematic approach to bug identification, accessibility auditing, and integration testing across Meetings 8–11 significantly raised the quality of the final build. Several issues that would have been visible in the assessed demo were caught and fixed well in advance.
+- **Johns Jimee's QA leadership** — the systematic approach to bug identification, accessibility auditing, and integration testing across Meetings 8–11 significantly raised the quality of the final build. Several issues that would have been visible in the assessed demo were caught and fixed well in advance.
 - **Aditya Bhandari's documentation discipline** — maintaining ADRs, sprint retrospectives, and the evaluation report throughout the project meant the evidence pack came together naturally rather than under last-minute pressure. His ownership of the presentation structure also gave the team a clear framework to rehearse within.
 - **User testing session** — conducting formal evaluation with external participants gave the team actionable data and reinforced several design decisions the team had been uncertain about.
 - **Quality of the final product** — the game evolved significantly from the initial build to the polished, accessible, multi-mode application submitted today. This was a direct result of structured sprint reviews and consistently acting on feedback.
@@ -125,8 +125,8 @@ Sijan Bhandari acknowledged each member's contribution formally before closing t
 | Name                | Key Contributions                                                                                       |
 | ------------------- | ------------------------------------------------------------------------------------------------------- |
 | Sijan Bhandari      | Project leadership, scope management, quiz content curation, answer wording review, overall quality oversight |
-| Johns Jimee         | Lead development, guest play feature, leaderboard, timer toggle, ARIA enhancements, codebase documentation |
-| Abdhullah Badhurdeen| QA engineering, bug resolution, accessibility audit, integration testing, demo preparation and contingency |
+| Johns Jimee         | Technical analysis, QA engineering, guest play feature, leaderboard, timer toggle, ARIA enhancements, codebase documentation |
+| Abdhullah Badhurdeen| Lead development, bug resolution, accessibility audit, integration testing, demo preparation and contingency |
 | Aditya Bhandari     | Systems architecture, ADR authoring, sprint retrospectives, evaluation report, presentation structure and delivery |
 | Sandesh Shah        | Research, graphic assets, image optimisation, SUS data collection, evaluation report co-author          |
 | Nabin Sunar         | UX design, front-end integration, mode selection prompt, presentation coordination, meeting minutes     |
@@ -141,7 +141,7 @@ Sijan Bhandari formally declared the project complete. All deliverables have bee
 
 A structured project retrospective is a recognised practice in Agile project management — it closes the work cycle with reflection rather than simply moving on. In an academic context it also demonstrates the meta-cognitive capability that BSc final-year work is designed to develop: the ability not just to execute a project, but to analyse the process and identify how it could be improved. The observations recorded today are specific and honest — they do not simply list what went smoothly. That specificity is evidence of genuine reflection, which is qualitatively different from a summary of events.
 
-The project as a whole has generated a comprehensive evidence portfolio: twelve sets of meeting minutes, three sprint retrospectives, two Architecture Decision Records, a formal user testing report, an evaluation synthesis, an ethics documentation trail, and a working, accessible, multi-mode browser-based educational quiz application. The consistent contributions of Abdhullah Badhurdeen in quality assurance and Aditya Bhandari in planning and documentation have been central to ensuring that portfolio is both thorough and professionally presented.
+The project as a whole has generated a comprehensive evidence portfolio: twelve sets of meeting minutes, three sprint retrospectives, two Architecture Decision Records, a formal user testing report, an evaluation synthesis, an ethics documentation trail, and a working, accessible, multi-mode browser-based educational quiz application. The consistent contributions of Abdhullah Badhurdeen in lead development and Aditya Bhandari in planning and documentation have been central to ensuring that portfolio is both thorough and professionally presented.
 
 ---
 
@@ -186,7 +186,7 @@ The project as a whole has generated a comprehensive evidence portfolio: twelve 
 
 Meeting 12 brought the project to a formal and well-deserved close. The submission package is complete, the presentation is ready, and every team member has fulfilled their responsibilities. The retrospective was honest and constructive — the team acknowledged both what worked and what could have been handled better, which is the mark of a group that has genuinely learned from the experience.
 
-Hexa Quiz began as an idea in a first meeting on 12 May 2026. It ends today as a fully deployed, accessible, user-tested, multi-mode educational quiz game, supported by twelve sets of meeting minutes, a formal evaluation, and a complete evidence portfolio. The sustained contributions of Abdhullah Badhurdeen and Aditya Bhandari across quality assurance, documentation, and technical leadership were central to the project reaching this standard.
+Hexa Quiz began as an idea in a first meeting on 12 May 2026. It ends today as a fully deployed, accessible, user-tested, multi-mode educational quiz game, supported by twelve sets of meeting minutes, a formal evaluation, and a complete evidence portfolio. The sustained contributions of Abdhullah Badhurdeen and Aditya Bhandari across development, documentation, and technical leadership were central to the project reaching this standard.
 
 Sijan Bhandari thanked everyone individually and officially closed the Hexa Quiz project. **Meeting closed at 12:00 PM.**
 

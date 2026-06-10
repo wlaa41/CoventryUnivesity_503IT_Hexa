@@ -31,8 +31,8 @@
 | Name                | Role / Designation              | Programme                    | Attendance |
 | ------------------- | ------------------------------- | ---------------------------- | ---------- |
 | Sijan Bhandari      | Project Lead                    | BSc (Hons) Computing Science | Present    |
-| Johns Jimee         | Secretary / Lead Developer      | BSc (Hons) Computing Science | Present    |
-| Abdhullah Badhurdeen| Minutes Recorder / QA Lead      | BSc (Hons) Computing Science | Present    |
+| Johns Jimee         | Secretary / Technical Analyst / QA Engineer | BSc (Hons) Computing Science | Present    |
+| Abdhullah Badhurdeen| Lead Developer                  | BSc (Hons) Computing Science | Present    |
 | Aditya Bhandari     | Chairperson / Systems Architect | BSc (Hons) Computing Science | Present    |
 | Sandesh Shah        | Research Associate              | BSc (Hons) Computing Science | Present    |
 | Nabin Sunar         | Implementation Support          | BSc (Hons) Computing Science | Present    |
@@ -43,7 +43,7 @@ _All team members were present at this meeting._
 
 ## Meeting Objective
 
-To review and confirm all improvement work completed since Meeting 9, run a full end-to-end integration check of the game build with Abdhullah Badhurdeen leading QA, conduct an accessibility audit, and confirm the documentation pack is on track for submission.
+To review and confirm all improvement work completed since Meeting 9, run a full end-to-end integration check of the game build with Johns Jimee leading QA, conduct an accessibility audit, and confirm the documentation pack is on track for submission.
 
 ---
 
@@ -133,7 +133,7 @@ Aditya Bhandari presented the current documentation status:
 
 ## Academic and Research Considerations
 
-The integration testing approach used today reflects a core principle in software quality assurance: end-to-end testing is not interchangeable with unit testing. Features that pass in isolation can interact unexpectedly when combined, and a structured walkthrough of the complete user journey guards against regressions that would otherwise surface only during a live demonstration. Abdhullah Badhurdeen's systematic approach to the QA review — working from a structured test matrix rather than ad hoc exploration — ensures that the test coverage is documented and reproducible. Aditya Bhandari's documentation of all architectural decisions through formal ADRs demonstrates the kind of professional engineering practice expected at BSc Computing Science level.
+The integration testing approach used today reflects a core principle in software quality assurance: end-to-end testing is not interchangeable with unit testing. Features that pass in isolation can interact unexpectedly when combined, and a structured walkthrough of the complete user journey guards against regressions that would otherwise surface only during a live demonstration. Johns Jimee's systematic approach to the QA review — working from a structured test matrix rather than ad hoc exploration — ensures that the test coverage is documented and reproducible. Aditya Bhandari's documentation of all architectural decisions through formal ADRs demonstrates the kind of professional engineering practice expected at BSc Computing Science level.
 
 ---
 

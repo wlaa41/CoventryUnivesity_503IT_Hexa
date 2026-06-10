@@ -49,9 +49,9 @@ Workplace security, financial scams, password management, data protection, and s
 |------|------------|------|--------|
 | Aaditya Bhandari | 15606963 | Systems Architect / Planner | [@Aaditya597](https://github.com/Aaditya597) |
 | Sandesh Jung Shah | 15626710 | Research Associate | [@SANDESH-YT](https://github.com/SANDESH-YT) |
-| Abdullah Bakhurdeen | 15580319 | Technical Analyst / QA Engineer | [@Adlhx](https://github.com/Adlhx) |
+| Abdullah Bakhurdeen | 15580319 | lead developer / QA Engineer | [@Adlhx](https://github.com/Adlhx) |
 | Nabin Sunar | 15618449 | Implementation Support | [@nabins12](https://github.com/nabins12) |
-| Johns Jimee | 15502001 | Secretary / Lead Developer | [@jimeej-bit](https://github.com/jimeej-bit) |
+| Johns Jimee | 15502001 | Secretary and Technical Analyst / | [@jimeej-bit](https://github.com/jimeej-bit) |
 | Sijan Bhandari | 15597041 | Project Lead / Chairperson | [@Bhandari5](https://github.com/Bhandari5) |
 
 ## Project Objectives

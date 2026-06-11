@@ -2,7 +2,7 @@
 
 **Coventry University, Dagenham, London**
 
-## Meeting 10 of 12: Sprint Finalisation and Full Integration Review
+## Meeting 10 of 13: Sprint Finalisation and Full Integration Review
 
 > **Team:** Sijan Bhandari · Johns Jimee · Abdhullah Badhurdeen · Aditya Bhandari · Sandesh Shah · Nabin Sunar
 

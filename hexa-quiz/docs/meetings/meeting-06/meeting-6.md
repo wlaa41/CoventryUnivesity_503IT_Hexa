@@ -2,7 +2,7 @@
 
 **Coventry University, Dagenham, London**
 
-## Meeting 6 of 11: Sprint 4 Review and Sprint 5 Planning
+## Meeting 6 of 13: Sprint 4 Review and Sprint 5 Planning
 
 > **Team:** Sijan Bhandari · Johns Jimee · Abdhullah Badhurdeen · Aditya Bhandari · Sandesh Shah · Nabin Sunar
 

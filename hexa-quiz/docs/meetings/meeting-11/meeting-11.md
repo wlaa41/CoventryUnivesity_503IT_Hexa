@@ -2,7 +2,7 @@
 
 **Coventry University, Dagenham, London**
 
-## Meeting 11 of 12: Presentation Rehearsal and Final Submission Preparation
+## Meeting 11 of 13: Presentation Rehearsal and Final Submission Preparation
 
 > **Team:** Sijan Bhandari · Johns Jimee · Abdhullah Badhurdeen · Aditya Bhandari · Sandesh Shah · Nabin Sunar
 

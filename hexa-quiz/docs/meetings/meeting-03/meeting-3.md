@@ -2,7 +2,7 @@
 
 **Coventry University, Dagenham, London**
 
-## Meeting 3 of 11: Assignment Brief Review and Teamwork Planning
+## Meeting 3 of 13: Assignment Brief Review and Teamwork Planning
 
 > **Team:** Sijan Bhandari · Johns Jimee · Abdhullah Badhurdeen · Aditya Bhandari · Sandesh Shah · Nabin Sunar
 

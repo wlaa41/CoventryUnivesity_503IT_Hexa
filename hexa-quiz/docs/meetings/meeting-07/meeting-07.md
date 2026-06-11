@@ -2,7 +2,7 @@
 
 **Coventry University, Dagenham, London**
 
-## Meeting 7 of 11: Game Review and Improvement Discussion
+## Meeting 7 of 13: Game Review and Improvement Discussion
 
 > **Team:** Sijan Bhandari · Johns Jimee · Abdhullah Badhurdeen · Aditya Bhandari · Sandesh Shah · Nabin Sunar
 

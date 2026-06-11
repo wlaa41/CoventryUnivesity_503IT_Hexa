@@ -2,7 +2,7 @@
 
 **Coventry University, Dagenham, London**
 
-## Meeting 5 of 11: Game Installation, Testing, and Implementation Discussion
+## Meeting 5 of 13: Game Installation, Testing, and Implementation Discussion
 
 > **Team:** Sijan Bhandari · Johns Jimee · Abdhullah Badhurdeen · Aditya Bhandari · Sandesh Shah · Nabin Sunar
 

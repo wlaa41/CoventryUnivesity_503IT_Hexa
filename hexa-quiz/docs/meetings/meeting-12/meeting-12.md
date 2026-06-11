@@ -2,7 +2,7 @@
 
 **Coventry University, Dagenham, London**
 
-## Meeting 12 of 12: Final Submission Sign-Off and Project Retrospective
+## Meeting 12 of 13: Final Submission Sign-Off and Project Retrospective
 
 > **Team:** Sijan Bhandari · Johns Jimee · Abdhullah Badhurdeen · Aditya Bhandari · Sandesh Shah · Nabin Sunar
 

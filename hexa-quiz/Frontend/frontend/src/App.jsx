@@ -12,6 +12,7 @@ import teensBg from "./assets/images/teens-bg.png";
 import adultsBg from "./assets/images/adults-bg.png";
 import hexaGroupLogo from "./assets/images/hexa-group-logo.png";
 import hexaHomeArena from "./assets/images/hexa-home-arena.png";
+import hexaQuizQr from "./assets/images/hexa-quiz-qr.png";
 
 const levelInfo = {
   kids: {
@@ -893,6 +894,19 @@ function PortalScreen({
   onGuestLogin,
   controls
 }) {
+  const [qrOpen, setQrOpen] = useState(false);
+
+  useEffect(() => {
+    if (!qrOpen) return undefined;
+
+    function closeOnEscape(event) {
+      if (event.key === "Escape") setQrOpen(false);
+    }
+
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [qrOpen]);
+
   return (
     <main className="app portal-screen arena-screen" style={{ backgroundImage: `url(${hexaHomeArena})` }}>
       <div className="home-overlay"></div>
@@ -1003,6 +1017,9 @@ function PortalScreen({
             <button className="guest-btn" type="button" onClick={onGuestLogin}>
               CONTINUE AS GUEST
             </button>
+            <button className="qr-btn" type="button" onClick={() => setQrOpen(true)}>
+              QR code
+            </button>
           </div>
 
           <small>
@@ -1011,6 +1028,33 @@ function PortalScreen({
           </small>
         </section>
       </section>
+
+      {qrOpen && (
+        <div className="qr-dialog-backdrop" onClick={() => setQrOpen(false)}>
+          <section
+            className="qr-dialog panel-3d"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="qr-dialog-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              className="qr-dialog-close"
+              type="button"
+              aria-label="Close QR code"
+              onClick={() => setQrOpen(false)}
+            >
+              &times;
+            </button>
+            <p className="eyebrow">MOBILE ACCESS</p>
+            <h2 id="qr-dialog-title">Scan the QR code</h2>
+            <p>Open Hexa Quiz Bike instantly on another device.</p>
+            <div className="qr-image-frame">
+              <img src={hexaQuizQr} alt="QR code for Hexa Quiz Bike" />
+            </div>
+          </section>
+        </div>
+      )}
     </main>
   );
 }
